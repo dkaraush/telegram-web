@@ -1,0 +1,79 @@
+/*
+This file is part of Telegram Desktop,
+the official desktop application for the Telegram messaging service.
+
+For license and copyright information please follow this link:
+https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
+*/
+
+// basic
+windowBg: #ffffff; // white: fallback for background
+windowFg: #000000; // black: fallback for text
+windowBgOver: #f1f1f1; // light gray: fallback for background with mouse over
+windowBgRipple: #e5e5e5; // darker gray: fallback for ripple effect
+windowFgOver: windowFg; // black: fallback for text with mouse over
+windowSubTextFg: #999999; // gray: fallback for additional text
+windowSubTextFgOver: #919191; // darker gray: fallback for additional text with mouse over
+windowBoldFg: #222222; // dark gray: fallback for bold text
+windowBoldFgOver: #222222; // dark gray: fallback for bold text with mouse over
+windowBgActive: #40a7e3; // bright blue: fallback for blue filled active areas
+windowFgActive: #ffffff; // white: fallback for text on active areas
+windowActiveTextFg: #168acd; // online blue: fallback for active text like online status
+windowShadowFg: #000000; // black: fallback for shadow
+windowShadowFgFallback: #f1f1f1; // gray: fallback for shadow without opacity
+
+rippleBg: #00000018;
+scrollBarBg: #00000053;
+scrollBarBgOver: #0000007a;
+scrollBg: #0000001a;
+scrollBgOver: #0000002a;
+
+shadowFg: #00000018; // most shadows (including opacity)
+slideFadeOutBg: #0000003c; // slide animation (chat to profile) fade out filling
+slideFadeOutShadowFg: windowShadowFg; // slide animation (chat to profile) fade out right section shadow
+
+introBg: windowBg; // login background
+introTitleFg: windowBoldFg; // login title text
+introDescriptionFg: windowSubTextFg; // login description text
+introErrorFg: windowSubTextFg; // login error text (like when providing a wrong log in code)
+
+introLogoBg: #4EA4F6;
+introLogoFg: #FFFFFF;
+introInputBorder: #E0E2E5;
+introInputPlaceholderFg: #BEC5CB;
+introInputActiveBorder: #6CB3F7;
+introInputActivePlaceholderFg: #6CB3F7;
+introInputArrow: #9AA2A7;
+introInputActiveArrow: #6CB3F7;
+introInputErrorFg: #E53935;
+introInputErrorBorder: introInputErrorFg;
+
+introSelectElementRipple: rippleBg;
+introInputButtonRipple: rippleBg;
+introInputButtonFg: #8D969C;
+
+introCheckboxBg: #4EA4F6;
+introCheckboxFg: windowFg;
+introActiveButtonBg: #4EA4F6;
+introActiveButtonFg: #FFFFFF;
+introActiveButtonBgRipple: #FFFFFF18;
+
+introEditButtonFg: #000000;
+introEditButtonRippleBg: rippleBg;
+
+introErrorFg: #F44336;
+
+
+appBg: windowBg;
+appBorder: #E0E2E5;
+leftSidebarBg: windowBg;
+leftSidebarMenuButtonFg: #888C8F;
+leftSidebarMenuButtonRippleBg: rippleBg;
+leftSidebarSearchboxBg: #F4F4F5;
+leftSidebarSearchboxFg: #A3AAAF;
+leftSidebarDialogBg: windowBg;
+leftSidebarDialogRippleBg: rippleBg;
+leftSidebarDialogContentFg: #8D9195;
+leftSidebarDialogContentBoldFg: #000000;
+rightSidebarBg: windowBg;
+appContentBg: #E6EBEE;

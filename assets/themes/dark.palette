@@ -1,0 +1,54 @@
+
+
+windowBg: #17212b; // white: fallback for background
+windowFg: #f5f5f5; // black: fallback for text
+windowBgOver: #232e3c; // light gray: fallback for background with mouse over
+windowBgRipple: #24303d; // darker gray: fallback for ripple effect
+windowFgOver: #e9ecf0; // black: fallback for text with mouse over
+windowSubTextFg: #708499; // gray: fallback for additional text
+windowSubTextFgOver: #7c90a4; // darker gray: fallback for additional text with mouse over
+windowBoldFg: #e9e8e8; // dark gray: fallback for bold text
+windowBoldFgOver: #e9e9e9; // dark gray: fallback for bold text with mouse over
+windowBgActive: #5288c1; // bright blue: fallback for blue filled active areas
+windowFgActive: #ffffff; // white: fallback for text on active areas
+windowActiveTextFg: #6ab3f3; // online blue: fallback for active text like online status
+windowShadowFg: #000000; // black: fallback for shadow
+windowShadowFgFallback: #17212b; // gray: fallback for shadow without opacity
+
+shadowFg: #04080e56; // most shadows (including opacity)
+slideFadeOutBg: #0000003c; // slide animation (chat to profile) fade out filling
+slideFadeOutShadowFg: windowShadowFg; // slide animation (chat to profile) fade out right section shadow
+
+activeButtonBg: #2f6ea5; // default active button background
+activeButtonBgOver: #3476ab; // default active button background with mouse over
+activeButtonBgRipple: #3b7cb1; // default active button ripple effect
+activeButtonFg: #ffffff; // default active button text
+activeButtonFgOver: #ffffff; // default active button text with mouse over
+activeButtonSecondaryFg: #9abfe7; // default active button additional text (selected messages counter in forward / delete buttons)
+activeButtonSecondaryFgOver: activeButtonSecondaryFg; // default active button additional text with mouse over
+
+introBg: windowBg; // login background
+introTitleFg: #eeeeee; // login title text
+introDescriptionFg: #72879b; // login description text
+introErrorFg: #e94040; // login error text (like when providing a wrong log in code)
+introCoverTopBg: #124a82; // intro gradient top (from)
+introCoverBottomBg: #23659f; // intro gradient bottom (to)
+introCoverIconsFg: #3b7cbd; // intro cloud graphics
+introCoverPlaneTrace: #3870a8; // intro plane traces
+introCoverPlaneInner: #ced9e2; // intro plane part
+introCoverPlaneOuter: #97a9b5; // intro plane part
+introCoverPlaneTop: #ffffff; // intro plane part
+introInputBorder: #646985;
+introInputPlaceholderFg: #646985;
+introInputActiveBorder: #2f6ea5;
+introInputActivePlaceholderFg: #2f6ea5;
+introInputArrow: #646985;
+introInputActiveArrow: #2f6ea5;
+
+introSelectRipple: #ffffff22;
+
+introCheckboxBg: #2f6ea5;
+introCheckboxFg: windowFg;
+introActiveButtonBg: activeButtonBg;
+introActiveButtonBgRipple: activeButtonBgRipple;
+introActiveButtonFg: activeButtonFg;

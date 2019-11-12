@@ -1,0 +1,452 @@
+#intro {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: #FFFFFF;
+	overflow: auto;
+	user-select: none;
+	-ms-user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	overflow: auto;
+	opacity: 1;
+	transition: opacity 0.2s ease-in-out;
+}
+#intro.hidden {
+	opacity: 0;
+}
+#intro h1, #intro p {
+	margin: 10px 0;
+}
+#intro > div {
+	width: 100%;
+	max-width: 300px;
+	margin: 5vh auto;
+	position: relative;
+}
+#intro > div > div {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	opacity: 0;
+	transition: transform 0.2s ease-in-out,
+				opacity 0.2s ease-in-out;
+	overflow:;
+}
+#intro #c-login .logo {
+	border-radius: 50%;
+	overflow: hidden;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 100%;
+	width: 128px;
+	height: 128px;
+	margin: 0 auto;
+}
+#intro #monkey {
+	width: 170px;
+	height: 170px;
+	margin: 0 auto;
+	overflow: hidden;
+}
+#intro h1,
+#intro p {
+	text-align: center;
+}
+#intro #c-login div.errorText {
+	text-align: center;
+	user-select: none;
+	-ms-user-select: none;
+	-webkit-user-select: none;
+	text-align: center;
+	opacity: 0;
+	transition: opacity 0.2s ease-in-out;
+	margin: 10px 0;
+}
+#intro .input,
+#intro .inputSelect {
+	position: relative;
+	width: 100%;
+	height: 45px;
+	box-sizing: border-box;
+	padding: 10px 15px;
+	border-radius: 8px;
+	border: 1px solid #E0E2E5;
+	transition: border 0.1s ease-in-out;
+}
+#intro .input input,
+#intro .inputSelect input {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 10px 15px;
+	box-sizing: border-box;
+	border: none;
+	outline: none;
+	border-radius: 8px;
+	font-size: 15px;
+	font-family: 'Roboto', sans-serif;
+	letter-spacing: initial;
+	background: transparent;
+	z-index: 15;
+	width: 100%;
+	caret-color: #6CB3F7;
+	vertical-align: bottom;
+	transition: top 0.1s ease-in-out,
+				left 0.1s ease-in-out,
+				right 0.1s ease-in-out,
+				bottom 0.1s ease-in-out;
+}
+#intro .input.focus input
+#intro .inputSelect.focus input {
+	top: -1px;
+	left: -1px;
+	right: -1px;
+	bottom: -1px;
+}
+#intro .input .placeholder,
+#intro .inputSelect .placeholder {
+	position: absolute;
+	top: 13px;
+	left: 10px;
+	padding: 0 5px;
+	color: #BEC5CB;
+	font-size: 15px;
+	transition: top 0.1s ease-in-out,
+				left 0.1s ease-in-out,
+				color 0.1s ease-in-out,
+				font-size 0.1s ease-in-out;
+}
+#intro .input.focus > .placeholder,
+#intro .inputSelect.focus > .placeholder {
+	top: 12px;
+	left: 9px;
+}
+#intro .input.typed > .placeholder,
+#intro .inputSelect.typed > .placeholder {
+	font-size: 12px;
+	left: 10px;
+	top: -8px;
+}
+#intro .input.focus.typed > .placeholder,
+#intro .inputSelect.focus.typed > .placeholder {
+	color: #6CB3F7;
+}
+#intro .input.focus,
+#intro .inputSelect.focus {
+	border-color: #6CB3F7;
+	border-width: 2px;
+}
+#intro .inputSelect,
+#intro .inputSelect input {
+	cursor: pointer;
+}
+#intro .inputSelect input {
+	padding-right: 40px;
+}
+#intro .inputSelect .button,
+#intro .input.password .button {
+	position: absolute;
+	right: 10px;
+	top: 10px;
+	bottom: 10px;
+	width: 23px;
+	transition: top 0.1s ease-in-out,
+				bottom 0.1s ease-in-out,
+				right 0.1s ease-in-out,
+				transform 0.1s cubic-bezier(.4,0,.2,1),
+				background-color 0.1s ease-in-out;
+}
+#intro .input.password .button {
+	right: 5px;
+	top: 5px;
+	bottom: 5px;
+	width: 33px;
+	padding: 5px;
+	box-sizing: border-box;
+}
+#intro .input.focus.country .button {
+	transform: rotate(180deg);
+}
+#intro .inputSelect .button span:nth-child(1) {
+	width: 2px;
+	height: 9px;
+	position: absolute;
+	transform: rotate(-45deg);
+	top: 7.5px;
+	left: 8px;
+	border-radius: 0.5px;
+}
+#intro .inputSelect .button span:nth-child(2) {
+	width: 2px;
+	height: 9px;
+	position: absolute;
+	transform: rotate(45deg);
+	top: 7.5px;
+	left: 14px;
+	border-radius: 0.5px;
+}
+#intro .input.password.focus .button {
+	top: 4px;
+	right: 4px;
+	bottom: 4px;
+}
+#intro .inputSelect.focus .button {
+	top: 9px;
+	bottom: 9px;
+	right: 9px;
+}
+#intro .inputSelect.focus .select {
+	top: 45px;
+	left: -1px;
+	right: -1px;
+	opacity: 1;
+}
+#intro .inputSelect .select {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 46px;
+	height: 200px;
+	transition: top 0.1s ease-in-out,
+				left 0.1s ease-in-out,
+				right 0.1s ease-in-out,
+				opacity 0.1s ease-in-out;
+	opacity: 0;
+	z-index: 20;
+	border-radius: 4px;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+	overflow: hidden;
+	display: none;
+}
+#intro .inputSelect .select > div {
+	overflow: auto;
+	width: 100%;
+	height: 100%;
+}
+#intro .inputSelect .select > div > div {
+	height: 50px;
+	cursor: pointer;
+	position: relative;
+	overflow: hidden;
+	user-select: none;
+	-ms-user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+}
+#intro .inputSelect .select > div > div .label {
+	display: inline-block;
+	vertical-align: middle;
+	position: absolute;
+	top: 0;
+	left: 50px;
+	right: 0;
+	bottom: 0;
+	line-height: 50px;
+}
+#intro .inputSelect .select .flag {
+	/*width: 24px;
+	height: 24px;*/
+	margin: 11px;
+	background-image: url(../img/flags.png);
+	width: 28px;
+	height: 28px;
+	background-position: -28px 0;
+	background-size: cover;
+	display: inline-block;
+}
+#intro .inputSelect .select .code {
+	float: right;
+	opacity: 0.5;
+	margin-right: 5px;
+	position: absolute;
+	right: 0;
+}
+#intro .checkbox {
+	width: 100%;
+	height: 30px;
+	padding: 5px 20px;
+	box-sizing: border-box;
+	cursor: pointer;
+}
+#intro .checkbox > * {
+	display: inline-block;
+	vertical-align: middle;
+}
+#intro .checkbox > div {
+	width: 20px;
+	height: 20px;
+	margin-right: 25px;
+	border-radius: 2px;
+	background: #4EA4F6;
+}
+#intro #c-login button,
+#intro #c-password button,
+#intro #c-register button {
+	border: none;
+	font-size: initial;
+	outline: none;
+	text-transform: uppercase;
+	position: relative;
+	border-radius: 8px;
+	user-select: none;
+	-ms-user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	text-align: center;
+	padding: 12px;
+	width: 100%;
+	box-sizing: border-box;
+	overflow: hidden;
+	transition: opacity 0.2s ease-in-out;
+	opacity: 0;
+}
+#intro #c-register button,
+#intro #c-password button {
+	opacity: 1;
+	cursor: pointer;
+}
+#intro #c-login button.ready {
+	opacity: 1;
+	cursor: pointer;
+}
+#intro #c-login button .ripple,
+#intro #c-register button .ripple,
+#intro #c-password button .ripple {
+	background: rgba(255, 255, 255, 0.2);
+}
+#c-login, #c-code, #c-phone-code, #c-password, #c-register {
+	transform: translateX(-10px);
+	opacity: 0;
+}
+#intro.c-login #c-code,
+#intro.c-phone-code #c-password,
+#intro.c-phone-code #c-register,
+#intro.c-password #c-register,
+#intro.c-login #c-register {
+	transform: translateX(10px);
+}
+#intro.c-login #c-login,
+#intro.c-phone-code #c-code,
+#intro.c-phone-code #c-phone-code,
+#intro.c-password #c-code,
+#intro.c-password #c-password,
+#intro.c-register #c-register {
+	opacity: 1;
+	transform: translateX(0px);
+	display: block;
+}
+#c-phone-code, #c-password {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 170px;
+	transition: transform 0.2s ease-in-out,
+				opacity 0.2s ease-in-out;
+}
+#intro .select span.country {
+    position: absolute;
+    left: 0;
+    right: 55px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#intro #c-code h1 {
+	font-size: 28px;
+}
+#intro #c-code h1 > * {
+	display: inline-block;
+	vertical-align: middle;
+}
+#intro #c-phone-code .edit {
+	cursor: pointer;
+	padding: 5px;
+	width: 24px;
+	height: 24px;
+	position: relative;
+	overflow: hidden;
+	border-radius: 50%;
+	margin-left: 3px;
+}
+#intro #c-phone-code .edit svg {
+	vertical-align: top;
+	display: inline-block;
+}
+#intro .input.password .button {
+	border-radius: 50%;
+	overflow: hidden;
+	cursor: pointer;
+	z-index: 100;
+}
+#intro .input.password input {
+	padding-right: 40px;
+	font-family: monospace;
+}
+#intro .input.password.visible input {
+	font-family: 'Roboto', 'Segoe UI', sans-serif;
+}
+#intro .input.password .button span.visible,
+#intro .input.password.visible .button span.non-visible {
+	display: none;
+}
+#intro .input.password.visible .button span.visible,
+#intro .input.password .button span.non-visible {
+	display: block;
+}
+
+#intro button span:first-child {
+	display: block;
+}
+#intro button span {
+	display: none;
+}
+#intro button.loading span:first-child {
+	display: none;
+}
+#intro button.loading span {
+	display: block;
+}
+#intro button.loading span:nth-child(3) {
+	display: inline-block;
+	position: absolute;
+	right: 10px;
+	top: 6px;
+	bottom: 6px;
+	width: 32px;
+	height: 32px;
+}
+#intro button.loading span:nth-child(3) div {
+	box-sizing: border-box;
+	display: block;
+	position: absolute;
+	width: 22px;
+	height: 22px;
+	margin: 5px;
+	border: 2px solid #fff;
+	border-radius: 50%;
+	animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+	border-color: #fff transparent transparent transparent;
+}
+#intro button.loading span:nth-child(3) div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+#intro button.loading span:nth-child(3) div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+#intro button.loading span:nth-child(3) div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+@keyframes lds-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

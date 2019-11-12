@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/x-icon" href="assets/img/favicon.ico" />
+	<link rel="icon" type="image/png" href="assets/img/favicon.png" />
+	<title>Telegram Web</title>
+	<link href="https://fonts.googleapis.com/css?family=Roboto:400,700,900&display=swap&subset=cyrillic" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="assets/styles/index.css">
+	<link rel="stylesheet" type="text/css" href="assets/styles/intro.css">
+	<link rel="stylesheet" type="text/css" href="assets/styles/app.css">
+</head>
+<body>
+	<script type="text/javascript" src="assets/scripts/utils.js"></script>
+	<script type="text/javascript" src="assets/scripts/storage.js"></script>
+	<script type="text/javascript" src="assets/scripts/theme.js"></script>
+	<div id="intro" class='hidden c-login' style='display: none'>
+		<div>
+			<div id='c-login'>
+				<div class='logo'>
+					<object type='image/svg+xml' data='assets/img/logo.svg'></object>
+				</div>
+				<br>
+				<h1>Sign in to Telegram</h1>
+				<p>Please confirm your country and<br>enter your phone number.</p>
+				<br>
+				<div class="inputSelect country">
+					<span class='placeholder'>Country</span>
+					<input type="text" readonly="readonly">
+					<div class="select">
+						<div class='scr'>
+							
+						</div>
+					</div>
+					<div class='button'>
+						<span></span>
+						<span></span>
+					</div>
+				</div>
+				<br>
+				<div class="input phone">
+					<span class='placeholder'>Phone Number</span>
+					<input type="text">
+				</div>
+				<div class='errorText'>Flood!</div>
+				<button class='Button'>
+					<span>NEXT</span>
+					<span>PLEASE WAIT...</span>
+					<span>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+					</span>
+				</button>
+				<br>
+				<br>
+			</div>
+			<div id='c-code' style="display:none;">
+				<div id="monkey"></div>
+				<div id="c-phone-code" style="display:none;">
+					<h1>
+						<span></span><div class="edit Button">
+							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+							<path d="M7.70710678,20.7071068 C7.5195704,20.8946432 7.26521649,21 7,21 L4,21 C3.44771525,21 3,20.5522847 3,20 L3,17 C3,16.7347835 3.10535684,16.4804296 3.29289322,16.2928932 L16.5857864,3 C17.3257272,2.26005924 18.5012114,2.22111499 19.2869988,2.88316725 L19.4142136,3 L21,4.58578644 C21.7399408,5.3257272 21.778885,6.50121136 21.1168328,7.28699879 L21,7.41421356 L7.70710678,20.7071068 Z M5,17.4142136 L5,19 L6.58578644,19 L16.5857864,9 L15,7.41421356 L5,17.4142136 Z M18,4.41421356 L16.414,5.99921356 L18,7.58521356 L19.5857864,6 L18,4.41421356 Z"></path>
+							</svg>
+						</div>
+					</h1>
+					<p>We have sent you an SMS<br>with the code.</p>
+					<br>
+					<div class="input phonecode">
+						<span class="placeholder">Code</span>
+						<input type="text">
+					</div>
+					<br>
+					<br>
+				</div>
+				<div id="c-password" style="display:none;">
+					<h1>Enter a Password</h1>
+					<p>Your account is protected with<br>an additional password.</p>
+					<br>
+					<div class="input password">
+						<span class='placeholder'>Password</span>
+						<input type="password">
+						<span class='button btn'>
+							<span class='non-visible'>
+								<object type="image/svg+xml" data="assets/img/icons/eye_visible.svg"></object>
+							</span>
+							<span class="visible">
+								<object type="image/svg+xml" data="assets/img/icons/eye_invisible.svg"></object>
+							</span>
+						</span>
+					</div>
+					<br>
+					<button class='Button'>
+						<span>NEXT</span>
+						<span>PLEASE WAIT...</span>
+						<span>
+							<div></div>
+							<div></div>
+							<div></div>
+							<div></div>
+						</span>
+					</button>
+				</div>
+			</div>
+			<div id='c-register' style="display: none">
+				<!-- <div id="avatar">
+					
+				</div> -->
+				<br>
+				<h1>Your name</h1>
+				<p>Enter your name and add<br>a profile picture</p>
+				<br>
+				<div class="input name">
+					<span class="placeholder">Name</span>
+					<input type="text">
+				</div>
+				<br>
+				<div class="input last">
+					<span class="placeholder">Last Name (optional)</span>
+					<input type="text">
+				</div>
+				<br>
+				<button class="Button">
+					<span>START MESSAGING</span>
+					<span>PLEASE WAIT...</span>
+					<span>
+						<div></div>
+						<div></div>
+						<div></div>
+						<div></div>
+					</span>
+				</button>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript" src="assets/scripts/intro.js"></script>
+		
+	<div id="app" class='hidden' style='display: none'>
+		<div>
+			<div id="left-sidebar" class="dialogs">
+				<div class="top">
+					<div class="Button menu"><svg viewBox='0 0 24 24'><path d="M4,16 L20,16 C20.5522847,16 21,16.4477153 21,17 C21,17.5128358 20.6139598,17.9355072 20.1166211,17.9932723 L20,18 L4,18 C3.44771525,18 3,17.5522847 3,17 C3,16.4871642 3.38604019,16.0644928 3.88337887,16.0067277 L4,16 L20,16 L4,16 Z M4,11 L20,11 C20.5522847,11 21,11.4477153 21,12 C21,12.5128358 20.6139598,12.9355072 20.1166211,12.9932723 L20,13 L4,13 C3.44771525,13 3,12.5522847 3,12 C3,11.4871642 3.38604019,11.0644928 3.88337887,11.0067277 L4,11 Z M4,6 L20,6 C20.5522847,6 21,6.44771525 21,7 C21,7.51283584 20.6139598,7.93550716 20.1166211,7.99327227 L20,8 L4,8 C3.44771525,8 3,7.55228475 3,7 C3,6.48716416 3.38604019,6.06449284 3.88337887,6.00672773 L4,6 Z"></path></svg></div>
+					<div class="searchbox">
+						<svg viewBox='0 0 24 24'><path d="M9.5,3 C13.0898509,3 16,5.91014913 16,9.5 C16,10.9337106 15.5358211,12.2590065 14.7495478,13.3338028 L19.7071068,18.2928932 C20.0976311,18.6834175 20.0976311,19.3165825 19.7071068,19.7071068 C19.3466228,20.0675907 18.7793918,20.0953203 18.3871006,19.7902954 L18.2928932,19.7071068 L13.3338028,14.7495478 C12.2590065,15.5358211 10.9337106,16 9.5,16 C5.91014913,16 3,13.0898509 3,9.5 C3,5.91014913 5.91014913,3 9.5,3 Z M9.5,5 C7.01471863,5 5,7.01471863 5,9.5 C5,11.9852814 7.01471863,14 9.5,14 C11.9852814,14 14,11.9852814 14,9.5 C14,7.01471863 11.9852814,5 9.5,5 Z"></path></svg>
+						<div>
+							<input type="text" autocorrect="off" autocomplete="off" placeholder="Search">
+						</div>
+					</div>
+				</div>
+				<div class="content">
+					<div class="dialogs">
+						
+					</div>
+					<div class="search" style="display: none">
+						<p>10 results.</p>
+						<div>
+							<div class="dialog Button">
+								<div class="picture">
+									<img src="https://avatars0.githubusercontent.com/u/30215770?s=460&v=4"></img>
+								</div>
+								<div class="info">
+									<h2>Dmitriy Karaush</h2>
+									<span class="date">Wed</span>
+									<span class="content">Hey, how are you?</span>
+								</div>
+							</div>
+							<div class="dialog Button">
+								<div class="picture">
+									<img src="https://avatars0.githubusercontent.com/u/30215770?s=460&v=4"></img>
+								</div>
+								<div class="info">
+									<h2>Dmitriy Karaush</h2>
+									<span class="date">Wed</span>
+									<span class="content">Hey, how are you?</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="content" class="empty">
+				<div class="empty" style="display: block;">
+					
+				</div>
+				<!-- <div class="u777000 hasInput">
+					<div class="header">
+						<div class="picture">
+							<div class="empty"></div>
+							<img src="" />
+						</div>
+						<div class="info">
+							<h2>[shpp] afterc</h2>
+							<p>10 members</p>
+						</div>
+					</div>
+					<div class="content">
+						<div class="messages">
+							<div>
+								<div>
+									<div class="in">
+										<span>
+											<span>Hello, world!</span>
+											<div>
+												<span class="time">15:35</span>
+											</div>
+										</span>
+									</div>
+									<div class="sys">
+										<span>
+											<span>dima joined chat</span>
+										</span>
+									</div>
+									<div class="out">
+										<span>
+											<span>Hello, Steven!</span>
+											<div>
+												<span class="time">16:38</span>
+											</div>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="sendbox">
+							<div>
+								<div class='gradient'></div>
+								<div class="inputbox">
+									<div class="Button emoji-select">
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+											<use xlink:href="#emoji-select" />
+										</svg>
+									</div>
+									<div class='text'>
+										<textarea rows="1" placeholder="Write a message..."></textarea>
+									</div>
+									<div class="Button attach">
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+											<use xlink:href="#attach" />
+										</svg>
+									</div>
+									<svg viewBox="15 12 11 20" class="corner">
+										<use xlink:href="#corner" />
+									</svg>
+								</div>
+								<div class="btn msg Button">
+									<div class="msg">
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+											<use xlink:href="#send" />
+										</svg>
+									</div>
+									<div class="voice">
+										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+											<use xlink:href="#mic" />
+										</svg>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div> -->
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript" src="assets/scripts/leftsidebar.js"></script>
+	<script type="text/javascript" src="assets/scripts/content.js"></script>
+
+	<script type="text/javascript" src="assets/scripts/libs/tl.js"></script>
+	<script type="text/javascript" src="assets/scripts/libs/class.js"></script>
+	<script type="text/javascript" src="assets/scripts/libs/crc32.js"></script>
+	<script type="text/javascript" src="assets/scripts/libs/bigint.js"></script>
+	<script type="text/javascript" src="assets/scripts/libs/sha1.min.js"></script>
+	<script type="text/javascript" src="assets/scripts/libs/sha256.min.js"></script>
+	<script type="text/javascript" src="assets/scripts/libs/aes.js"></script>
+	<script type="text/javascript" src="assets/scripts/libs/crypto.js"></script>
+	<script type="text/javascript" src="assets/scripts/mtproto.js"></script>
+	<script type="text/javascript" src="assets/scripts/api.js"></script>
+	<script type="text/javascript" src="assets/scripts/text.js"></script>
+	<script type="text/javascript" src="assets/scripts/main.js"></script>
+	<script type="text/javascript" src="assets/scripts/ui.js"></script>
+
+	<script type="text/javascript" src="assets/scripts/libs/lottie.min.js"></script>
+	<script type="text/javascript" src="assets/scripts/libs/zlib.min.js"></script>
+	<script type="text/javascript" src="assets/scripts/libs/gunzip.min.js"></script>
+
+	<svg style="width:0;height:0;">
+		<defs>
+			<filter id="sh" y="-40%" x="0%" width="100%" height="200%">
+				<feGaussianBlur in="SourceAlpha" stdDeviation="1"/>
+				<feOffset dx="0" dy="0.5" result="offsetblur"/>
+				<feFlood flood-color="rgba(0,0,0,0.2)"/>
+				<feComposite in2="offsetblur" operator="in"/>
+				<feMerge>
+					<feMergeNode/>
+					<feMergeNode in="SourceGraphic"/>
+				</feMerge>
+			</filter>
+			<g id="emoji-select">
+				<path d="M12,1 C18.0751322,1 23,5.92486775 23,12 C23,18.0751322 18.0751322,23 12,23 C5.92486775,23 1,18.0751322 1,12 C1,5.92486775 5.92486775,1 12,1 Z M12,3 C7.02943725,3 3,7.02943725 3,12 C3,16.9705627 7.02943725,21 12,21 C16.9705627,21 21,16.9705627 21,12 C21,7.02943725 16.9705627,3 12,3 Z M6.66607426,13.6501686 C7.13342047,13.4117012 7.7055954,13.5972442 7.94406273,14.0645904 C8.71613228,15.5776856 10.2710663,16.5499921 12,16.5499921 C13.7262991,16.5499921 15.2792455,15.5806677 16.0525854,14.0711462 C16.2918118,13.6041881 16.8642875,13.419575 17.3312456,13.6588014 C17.7982037,13.8980278 17.9828168,14.4705034 17.7435904,14.9374615 C16.6482438,17.0755242 14.4462205,18.4499921 12,18.4499921 C9.55003677,18.4499921 7.34521255,17.0713067 6.2516524,14.928157 C6.01318507,14.4608108 6.19872805,13.8886359 6.66607426,13.6501686 Z M8.75,8 C9.44035594,8 10,8.67157288 10,9.5 C10,10.3284271 9.44035594,11 8.75,11 C8.05964406,11 7.5,10.3284271 7.5,9.5 C7.5,8.67157288 8.05964406,8 8.75,8 Z M15.25,8 C15.9403559,8 16.5,8.67157288 16.5,9.5 C16.5,10.3284271 15.9403559,11 15.25,11 C14.5596441,11 14,10.3284271 14,9.5 C14,8.67157288 14.5596441,8 15.25,8 Z"></path>
+			</g>
+			<g id="attach">
+				<path d="M11.657825,8.68730116 L7.89384699,12.5266719 C6.53977525,13.9078658 6.53979565,16.118605 7.89389288,17.4997739 C9.18119565,18.812813 11.2598788,18.8798255 12.6276396,17.6859428 L12.8071445,17.5177786 L19.3928802,10.8005213 C21.4766204,8.67512215 21.4766204,5.27313659 19.3928802,3.14773741 C17.4051081,1.12022499 14.1862843,1.0310006 12.0906645,2.90336495 L11.834659,3.14773741 L5.26671543,9.84699003 C2.45333216,12.7166196 2.45333216,17.3098454 5.26671543,20.179475 C7.96150749,22.9281424 12.3352577,23.0332941 15.1578204,20.4629606 L15.452067,20.1794113 L19.2160679,16.340063 C19.6027032,15.945688 19.596429,15.3125541 19.202054,14.9259188 C18.8076791,14.5392835 18.1745452,14.5455577 17.7879099,14.9399327 L13.9520378,18.8511531 C11.9281881,20.8353343 8.67903707,20.8031766 6.6948559,18.7793268 C4.64395201,16.6874204 4.64395201,13.3390446 6.6948559,11.2471382 L13.3088798,4.50180526 C14.6072848,3.22884976 16.6917843,3.24948061 17.9647398,4.54788555 C19.2860006,5.89556155 19.2860006,8.05269718 17.9647398,9.40037319 L11.3764629,16.119959 C10.803533,16.6816592 9.88373353,16.6725557 9.32203335,16.0996258 C8.73040544,15.4961698 8.73039653,14.5302606 9.3220133,13.9267937 L13.0859914,10.0874229 C13.4726243,9.6930457 13.4663463,9.05991185 13.0719691,8.67327889 C12.6775919,8.28664594 12.044458,8.29292392 11.657825,8.68730116 Z"></path>
+			</g>
+			<g id="send">
+				<path d="M2.65383364,2.92607697 L4.145798,9.778632 C4.26700994,10.3353554 4.73555061,10.7489799 5.30300879,10.8002098 L16.196355,11.7836569 C16.3159306,11.7944521 16.4041145,11.9001385 16.3933192,12.0197141 C16.3838746,12.1243302 16.3009783,12.2072294 16.1963626,12.2166777 L5.30295988,13.2005138 C4.73552551,13.2517615 4.26701089,13.6653731 4.14579755,14.2220735 L2.65385781,21.074154 C2.55168485,21.543407 2.84926209,22.0066394 3.31851517,22.1088123 C3.50628037,22.1496954 3.70229947,22.1272304 3.87594675,22.0449272 L23.4110848,12.7858981 C23.8450551,12.5802101 24.0301144,12.0616646 23.8244264,11.6276943 C23.7384721,11.4463438 23.5924353,11.300307 23.4110848,11.2143527 L3.87592461,1.95531307 C3.44195432,1.74962507 2.92340882,1.93468443 2.71772082,2.36865471 C2.63541897,2.54229904 2.61295329,2.73831451 2.65383364,2.92607697 Z"></path>
+			</g>
+			<g id="mic">
+				<path d="M19,10 C19.5522847,10 20,10.4477153 20,11 C20,15.0792885 16.9468043,18.445465 13.0009551,18.9379871 L13,22 C13,22.5522847 12.5522847,23 12,23 C11.4871642,23 11.0644928,22.6139598 11.0067277,22.1166211 L11,22 L11.0000487,18.9381123 C7.05371356,18.4460359 4,15.0796344 4,11 C4,10.4477153 4.44771525,10 5,10 C5.55228475,10 6,10.4477153 6,11 C6,14.3137085 8.6862915,17 12,17 C15.3137085,17 18,14.3137085 18,11 C18,10.4477153 18.4477153,10 19,10 Z M12,2 C14.209139,2 16,3.790861 16,6 L16,11 C16,13.209139 14.209139,15 12,15 C9.790861,15 8,13.209139 8,11 L8,6 C8,3.790861 9.790861,2 12,2 Z"></path>
+			</g>
+			<g id="corner">
+				<path xmlns="http://www.w3.org/2000/svg" d="M18.0000271,29 L23.9999983,29 L23.9999983,12 C23.8069952,14.8392983 23.1238006,17.7667487 21.9504146,20.7823513 C21.0460458,23.1065797 19.5041296,25.2666259 17.3246662,27.26249 C16.9173386,27.6354732 16.889523,28.2680413 17.262523,28.6753536 C17.4519513,28.8822073 17.7195427,29 18.0000271,29 Z" style="filter:url(#sh)"></path>
+			</g>
+		</defs>
+	</svg>
+</body>
+</html>

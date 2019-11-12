@@ -1,0 +1,145 @@
+body {
+	background: windowBg;
+	color: windowFg;
+}
+* {
+	color: windowFg;
+}
+
+/* scrollbar */
+*::-webkit-scrollbar {
+	background-color: scrollBg;
+	opacity: scrollBg(alpha);
+	width: 5px;
+	border-radius: 5px;
+}
+*::-webkit-scrollbar-thumb {
+	background-color: scrollBarBg;
+	opacity: scrollBarBg(alpha);
+	border-radius: 5px;
+}
+
+/* intro */
+#intro {
+	background: introBg;
+}
+#intro #c-login .logo {
+	background-color: introLogoBg;
+}
+#intro h1 {
+	color: introTitleFg;
+}
+#intro p {
+	color: introDescriptionFg;
+}
+#intro .input .placeholder,
+#intro .inputSelect .placeholder {
+	background: introBg;
+	color: introInputPlaceholderFg;
+}
+#intro .input,
+#intro .inputSelect {
+	border-color: introInputBorder;
+}
+#intro .input.focus,
+#intro .inputSelect.focus {
+	border-color: introInputActiveBorder;
+}
+#intro .input.focus.typed .placeholder,
+#intro .inputSelect.focus.typed .placeholder {
+	border-color: introInputActivePlaceholderFg;
+}
+#intro .inputSelect .select {
+	background: introBg;
+}
+#intro .inputSelect .button span {
+	background-color: introInputArrow;
+}
+#intro .inputSelect.focus .button span {
+	background-color: introInputActiveArrow;
+}
+#intro #c-login button,
+#intro #c-register button,
+#intro #c-password button {
+	background-color: introActiveButtonBg;
+}
+#intro button span {
+	color: introActiveButtonFg;
+}
+#intro #c-login button .ripple,
+#intro #c-register button .ripple,
+#intro #c-password button .ripple {
+	background-color: introActiveButtonBgRipple;
+}
+#intro #c-phone-code .edit svg {
+	fill: introEditButtonFg;
+}
+#intro #c-phone-code .edit .ripple {
+	background-color: introEditButtonRippleBg;
+}
+#intro .checkbox span {
+	color: introCheckboxFg;
+}
+#intro .checkbox > div {
+	background-color: introCheckboxBg;
+}
+#intro .inputSelect .select .ripple {
+	background: introSelectElementRipple;
+}
+#intro .input.error .placeholder {
+	color: introInputErrorFg !important;
+}
+#intro .input.error {
+	border-color: introInputErrorBorder;
+}
+#intro .input.password .button .ripple {
+	background-color: introInputButtonRipple;
+}
+#intro .input.password svg {
+	fill: introInputButtonFg;
+}
+#intro #c-login .errorText {
+	color: introErrorFg;
+}
+
+/* app */
+#app,
+#app #content > div .header {
+	background-color: appBg;
+}
+#app > div,
+#app #left-sidebar,
+#app #content,
+#app #content > div .header {
+	border-color: appBorder;
+}
+#app #content {
+	background-color: appContentBg;
+}
+#app #left-sidebar .Button.menu svg {
+	fill: leftSidebarMenuButtonFg;
+}
+#app #left-sidebar .Button.menu .ripple {
+	background-color: leftSidebarMenuButtonRippleBg;
+}
+#app #left-sidebar .searchbox {
+	background-color: leftSidebarSearchboxBg;
+}
+#app #left-sidebar .searchbox svg {
+	fill: leftSidebarSearchboxFg;
+}
+#app #left-sidebar .searchbox input::placeholder {
+	color: leftSidebarSearchboxFg;
+}
+#app #left-sidebar .dialog {
+	background-color: leftSidebarDialogBg;
+}
+#app #left-sidebar .dialog .ripple {
+	background-color: leftSidebarDialogRippleBg;
+}
+#app #left-sidebar .dialog .info span.content span {
+	color: leftSidebarDialogContentFg;
+}
+#app #left-sidebar .dialog .info span.content span.active {
+	color: leftSidebarDialogContentBoldFg;
+}
