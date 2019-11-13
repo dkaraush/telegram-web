@@ -22,36 +22,21 @@ function openPeer(peer) {
 }
 
 var peerListeners = [];
-function peerImage(peer) {
-	var a = [$new('div.empty', peer.info.short, [], function (el) {
-				el.style.backgroundColor = userColors[(parseInt(peer.id.slice(1)) % userColors.length)];
-			})];
-	if (peer.info.photo != null && peer.info.photo.smallLoaded) {
-		a.push(_peerImage(peer));
-	}
-	return a;
-}
-function _peerImage(peer) {
-	return $new('img', null, [], function (el) {
-					el.src = peer.info.photo.smallSrc;
-					el.style.opacity = 0;
-					$t(16, function () {el.style.opacity = 1});
-				});
-}
 function svg(name, p) {
 	var s = $doc.createElementNS('http://www.w3.org/2000/svg', 'svg'), u = $doc.createElementNS('http://www.w3.org/2000/svg', 'use');
 	u.setAttributeNS('http://www.w3.org/1999/xlink', 'href', '#'+name);
 	if (name != 'corner') {
 		s.setAttribute('height', 24);
 		s.setAttribute('width', 24);
-	} else
 		s.className.baseVal = p;
+	} else
+		s.className.baseVal = 'corner';
 	s.setAttribute('viewBox', name == 'corner' ? '15 12 11 20' : '0 0 24 24');
 	s.appendChild(u);
 	return s;
 }
 function createPeerWindow(peer) {
-	var el, msgcontainer, scrcontainer;
+	var el, msgcontainer, scrcontainer, msgs = [];
 	peerListeners.push(peer.id+'-'+peer.listenDialog(function (new_peer) {
 		var pic = el.querySelector('.picture');
 		if (new_peer.info.photo && new_peer.info.photo.smallLoaded &&
@@ -59,21 +44,53 @@ function createPeerWindow(peer) {
 			var img = _peerImage(new_peer)
 			pic.appendChild(img);
 		}
-	}))
-	peerListeners.push(peer.id + '-' + peer.listenMessages(function (p) {
+	}));
+	function updateMessages(p) {
 		var wasOnBottom = scrcontainer.scrollTop >= scrcontainer.scrollHeight - scrcontainer.clientHeight - 10*window.devicePixelRatio;
+		var lastScrollHeight = scrcontainer.scrollHeight;
+		var ps = '#'+p.id+'-';
 		for (var k in p.messages) {
-			if (!$('#'+p.id+'-'+k)) {
+			var t = parseInt(k);
+			if (msgs.indexOf(t) < 0) {
 				var element = messageElement(p.messages[k], p);
-				if (element)
-					msgcontainer.appendChild(element);
+				if (element) {
+					if (msgcontainer.childElementCount == 0) {
+						msgcontainer.appendChild(element);
+						msgs.push(t);
+					} else {
+						var i = binSearch(msgs, t), e = msgs[i];
+						if (e != null) {
+							var el = $(ps+e);
+							if (e < t)
+								el = el.nextSibling;
+							msgcontainer.insertBefore(element, el);
+							msgs.splice(i + (e < t ? 1 : 0), 0, t);
+						}
+					}
+				}
 			}
 		}
-		if (wasOnBottom) {
-			scrcontainer.scrollTop = scrcontainer.scrollHeight - scrcontainer.clientHeight;
+		scrcontainer.scrollTop += (scrcontainer.scrollHeight - lastScrollHeight);
+		requestAnimationFrame(checkHoles.bind(this, true));
+	}
+	peerListeners.push(peer.id + '-' + peer.listenMessages(updateMessages));
+	
+	var lastHolesCheck = -1;
+	function checkHoles(force) {
+		if (peer.loadingHole)
+			return;
+		if (Date.now() - lastHolesCheck < 200 && !force)
+			return;
+		var ps = '#'+peer.id+'-';
+		for (var i = 0; i < peer.holes.length; ++i) {
+			var el = $(ps+peer.holes[i].id);
+			if (el && isAnyPartOfElementInViewport(el)) {
+				peer.loadHole(i);
+				break;
+			}
 		}
-	}));
-	peer.load();
+		lastHolesCheck = Date.now();
+	}
 	return el = $new('div.'+peer.id+(peer.type!='C'?'.hasInput':''), null, [
 		$new('div.header', null, [
 			$new('div.picture', null, peerImage(peer)),
@@ -85,7 +102,7 @@ function createPeerWindow(peer) {
 		$new('div.content', null, [
 			scrcontainer=$new('div.messages', null, [
 				$new('div', null, [msgcontainer = $new('div')])
-			]),
+			], $evt(['scroll'], checkHoles)),
 			(peer.type != 'C' ?
 				$new('div.sendbox', null, [
 					$new('div', null, [
@@ -94,7 +111,7 @@ function createPeerWindow(peer) {
 							$new('div.emoji-select', null, [svg('emoji-select')], UI.addRipple),
 							$new('div.text', null, [$new('textarea', {rows: 1, placeholder: "Message"})]),
 							$new('div.attach', null, [svg('attach')], UI.addRipple),
-							svg('corner', 'corner')
+							svg('corner')
 						]),
 						$new('div.btn.voice', null, [
 							$new('div.voice', null, [svg('mic')]),
@@ -104,7 +121,20 @@ function createPeerWindow(peer) {
 				])
 			: null)
 		])
-	]);
+	], function () {
+		updateMessages(peer);
+		if (peer.holes.length == 0)
+			peer.load();
+		scrcontainer.scrollTop = scrcontainer.scrollHeight - scrcontainer.clientHeight;
+	});
+}
+
+// thanks, https://gist.github.com/davidtheclark/5515733
+function isAnyPartOfElementInViewport(el) {
+    var rect = el.getBoundingClientRect(), 
+    	h = ($win.innerHeight || $doc.documentElement.clientHeight),
+    	w = ($win.innerWidth || $doc.documentElement.clientWidth);
+    return (((rect.top <= h) && ((rect.top + rect.height) >= 0)) && (rect.left <= w) && ((rect.left + rect.width) >= 0));
 }
 function dateToTimeString(t) {
 	var d = new Date(t * 1000);
@@ -120,8 +150,39 @@ function messageElement(m,p) {
 				$new('span', m.message),
 				$new('div', null, [
 					$new('span.time', dateToTimeString(m.date))
-				])
+				]),
+				svg('corner')
 			])
 		]);
 	}
+}
+
+function correct(arr, i, x) {
+	if (arr[i] == x) {
+		console.warn('WTF???');
+		return true;
+	}
+	return (arr[i] < x && (i == arr.length-1 || arr[i+1] > x)) ||
+		   (arr[i] > x && (i == 0 || arr[i-1] < x));
+}
+function binsrch(a, l, r, x) {
+	if (l == r) {
+		if (correct(a, l, x))
+			return l;
+		return null;
+	}
+	var m = ~~(l + (r - l + 1) / 2);
+	if (correct(a, m, x))
+		return m;
+	else if (a[m] > x)
+		return binsrch(a, l, m-1, x);
+	else if (a[m] < x)
+		return binsrch(a, m+1, r, x);
+	else {
+		console.warn('WTF 2???');
+		return null;
+	}
+}
+function binSearch(a, x) {
+	return binsrch(a, 0, a.length-1, x);
 }

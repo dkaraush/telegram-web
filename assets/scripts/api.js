@@ -6,9 +6,6 @@ function peerID(peer) {
 	return peerType[peer._]+peer[ids[peerType[peer._]]];
 }
 
-var exportingAuthorization = false;
-var exportingAuthorizationCallbacks = [];
-var exportedAuthorization = null;
 var ext = {};
 var ExternalMTProto = MTProto.extend({
 	constructor: function (options) {
@@ -16,10 +13,10 @@ var ExternalMTProto = MTProto.extend({
 		this.id = S(options.photo_id);
 		this._super(options);
 		this.before = function (callback) {
-			function importAuth() {
+			function importAuth(data) {
 				self.sendAPIMethod('auth.importAuthorization', {
-					id: exportedAuthorization.id,
-					bytes: exportedAuthorization.bytes
+					id: data.id,
+					bytes: data.bytes
 				}, function (status, data) {
 					if (status && data._ == "auth.authorization") {
 						callback();
@@ -28,32 +25,16 @@ var ExternalMTProto = MTProto.extend({
 					}
 				}, true);
 			}
-
-			if (exportedAuthorization == null) {
-				if (exportingAuthorization) {
-					exportingAuthorizationCallbacks.push(importAuth);
-					return;
+			
+			proto.sendAPIMethod('auth.exportAuthorization', {
+				dc_id: self.DC
+			}, function (status, data) {
+				if (status && data._ == 'auth.exportedAuthorization') {
+					importAuth(data);
+				} else {
+					self.warn('failed to export authorization', data);
 				}
-
-				exportingAuthorization = true;
-				proto.sendAPIMethod('auth.exportAuthorization', {
-					dc_id: self.DC
-				}, function (status, data) {
-					if (status && data._ == 'auth.exportedAuthorization') {
-						exportingAuthorization = false;
-						exportedAuthorization = data;
-						importAuth(exportedAuthorization);
-						map(exportingAuthorizationCallbacks, function (f) {
-							f(exportedAuthorization);
-						});
-						exportingAuthorizationCallbacks = [];
-					} else {
-						self.warn('failed to export authorization', data);
-					}
-				})
-			} else {
-				importAuth(exportedAuthorization);
-			}
+			})
 		}
 		this.connect();
 	}
@@ -61,59 +42,129 @@ var ExternalMTProto = MTProto.extend({
 var Photo = Class.extend({
 	constructor: function (data, peer) {
 		this.conn = proto;
-		if (data.dc_id && proto.DC != data.dc_id && !ext[data.dc_id]) {
+		if (proto.DC != data.dc_id && !ext[data.dc_id]) {
 			ext[data.dc_id] = new ExternalMTProto({
 				debug: true,
 				DC: data.dc_id
 			});
 			this.conn = ext[data.dc_id];
-		} else
+		} else if (data.dc_id != proto.DC && ext[data.dc_id])
+			this.conn = ext[data.dc_id];
+		else
 			this.conn = proto;
 
+		this.type = '';
+		this.video = false;
+		this.audio = false;
+		this.image = false;
+		this.file = false;
+
+		this.filename = null;
+		this.size = null;
+		this.isSticker = false;
+		this.isAnimatedSticker = false;
+
 		this.peer = peer;
+		this.blob = null;
+		this.src = null;
 
-		this.smallLoaded = false;
-		this.bigLoaded = false;
+		if (data._ == 'photo') {
+			this.image = true;
+			this.type = 'image';
+			this.id = data.id;
+			this.date = data.date;
+			this.size = data.size;
+			this.mime = data.mime_type;
+			this.file_reference = data.file_reference;
+			this.access_hash = data.access_hash;
+			this.loadAsPhoto();
+		} else if (data._ == 'document') {
+			for (var i = 0; i < data.attributes.length; ++i) {
+				var attr = data.attributes[i], t = attr._.slice(17);
+				if (attr._ == 'ImageSize') {
+					this.image = true;
+					if (this.type != 'sticker' && this.type != 'animated-sticker')
+						this.type = 'image';
+					this.dimSize = {w: attr.w, h: attr.h};
+				} else if (attr._ == 'Animated') {
+					this.image = true;
+					this.type = 'animated-sticker';
+					this.isAnimatedSticker = true;
+				} else if (attr._ == 'Sticker') {
+					this.image = true;
+					this.type = 'sticker';
+					this.stickerSet = attr.stickerset;
+					this.hasMask = attr.mask || false;
+				} else if (attr._ == 'Video') {
+					this.video = true;
+					this.type = 'video';
+					this.isRound = attr.round_message || false;
+					this.streaming = attr.supports_streaming || false;
+					this.dimSize = {w: attr.w, h: attr.h};
+					this.duration = attr.duration;
+				} else if (attr._ == 'Audio') {
+					this.audio = true;
+					this.type = 'audio';
+					this.isVoiceMessage = attr.voice || false;
+					this.duration = attr.duration;
+					this.title = attr.title || null;
+					this.performer = attr.performer || null;
+					this.waveform = attr.waveform || null;
+				} else if (attr._ == 'Photoname') {
+					this.filename = attr.file_name;
+				} else if (attr._ == 'HasStickers') {
+					this.hasStickers = true;
+				}
+			}
 
-		this.photo_small = data.photo_small;
-		this.photo_big = data.photo_big;
-
-		if (this.photo_small && this.photo_small._ == "fileLocationToBeDeprecated") {
-			this.load('small');
+			this.id = data.id;
+			this.date = data.date;
+			this.size = data.size;
+			this.mime = data.mime_type;
+			this.file_reference = data.file_reference;
+			this.access_hash = data.access_hash;
+			this.loadAsPhoto();
+		} else if (data.photo_small._ == 'fileLocationToBeDeprecated') {
+			this.volume_id = data.photo_small.volume_id;
+			this.local_id = data.photo_small.local_id;
+			this.dimSize = {w: 160, h: 160};
+			this.type = 'image';
+			this.image = true;
+			this.loadAsDeprecatedPhoto();
 		}
 	},
-	load: function (p) {
-		var k = 'photo_'+p;
-		var local_id = this[k].local_id;
-		var volume_id = this[k].volume_id;
-		var inputLocation = {
-			_: "inputPeerPhotoFileLocation",
-			peer: this.peer.inputPeer(),
-			local_id: local_id,
-			volume_id: volume_id
-		};
+	loadAsDeprecatedPhoto: function () {
 		var self = this;
 		this.conn.sendAPIMethod('upload.getFile', {
-			location: inputLocation,
+			location: {
+				_: "inputPeerPhotoFileLocation",
+				peer: this.peer.inputPeer(),
+				local_id: this.local_id,
+				volume_id: this.volume_id
+			},
 			offset: 0,
-			big: p=='big',
+			big: false,
 			limit: 1024 * 1024
 		}, function (status, data) {
 			if (status) {
 				if (data._ == 'upload.file') {
-					var blob = new Blob([data.bytes]);
-					self[p+'Src'] = URL.createObjectURL(blob);
-					self[p+'Loaded'] = true;
-					self.peer.update();
+					self.blob = new Blob([data.bytes]);
+					self.src = URL.createObjectURL(self.blob);
+					if (self.peer)
+						self.peer.update();
 				}
 			}
 		});
 	},
-	update: function (new_data) {
+	loadAsPhoto: function () {
 
 	}
 });
-
+function title(data) {
+	if (data._ == 'user')
+		return data.first_name + (data.last_name ? ' ' + data.last_name : '');
+	return data.title || ''
+}
 var chats = {};
 var users = {};
 var Peer = Class.extend({
@@ -122,7 +173,6 @@ var Peer = Class.extend({
 		this.onMessagesUpdate = {};
 
 		this.type = peerType[peer._];
-		console.log(peer._, this.type);
 		this.id = peerID(peer);
 		if (typeof peers[this.id] === 'undefined')
 			peers[this.id] = this;
@@ -152,14 +202,14 @@ var Peer = Class.extend({
 			};
 		} else {
 			var hole = this.holes[hole_id];
-			var msg = this.message[hole.id];
+			var msg = this.messages[hole.id];
 			offset = {
 				offset_id: hole.id,
-				offset_date: msg.date,
-				add_offset: hole.dir ? -20 : 20,
+				offset_date: 0,//hole.dir ? 0 : msg.date,
+				add_offset: hole.dir ? 0 : -20,
 				limit: 20,
-				max_id: hole.dir ? hole.id : 0,
-				min_id: hole.dir ? 0 : hole.id,
+				max_id: 0,//hole.dir ? hole.id : 0,
+				min_id: 0,//hole.dir ? 0 : hole.id,
 				hash: 0
 			};
 		}
@@ -175,21 +225,67 @@ var Peer = Class.extend({
 		});
 	},
 	receiveHistory: function (hole_id, data) {
-		// TODO: process holes
 		if (!data.messages)
 			return;
 		if (data.count)
 			this.messagesCount = data.count;
 		this.putMessages(data.messages);
-	},
-	putMessages: function (messages) {
-		for (var i = 0; i < messages.length; ++i) {
-			this.messages[messages[i].id] = messages[i];
-			if (messages[i].id > this.info.top_message)
-				this.info.top_message = messages[i].id;
+
+		if (typeof hole_id === 'undefined') {
+			this.holes.push({
+				id: data.messages[data.messages.length-1].id,
+				dir: true
+			});
+			hole_id = this.holes.length-1;
+		}
+
+		var hole = this.holes[hole_id];
+		for (var i = 0; i < this.holes.length; ++i) {
+			if (i == hole_id) continue;
+			for (var j = 0; j < data.messages.length; ++j) {
+				if (data.messages[j].id == this.holes[i].id &&
+					(this.holes[i].dir ? j != data.messages.length-1 : j != 0)) {
+					this.holes.splice(i, 1);
+					i--;
+					continue;
+				}
+			}
+		}
+		if (hole.dir) {
+			if (data.messages[data.messages.length-1].id != 0 &&
+				Object.keys(this.messages).length != this.messagesCount)
+				this.holes.push({
+					id: data.messages[data.messages.length-1].id,
+					dir: true
+				})	
+		} else {
+			if (data.messages[0].id != this.info.top_message &&
+				Object.keys(this.messages).length != this.messagesCount)
+				this.holes.push({
+					id: data.messages[0].id,
+					dir: false
+				})
+		}
+		for (var i = 0; i < this.holes.length; ++i) {
+			if (this.holes[i].id == hole.id && 
+				this.holes[i].dir == hole.dir) {
+				this.holes.splice(i, 1);
+				break;
+			}
 		}
 
 		this.update();
+	},
+	processMessage: function (msg) {
+		return msg;
+	},
+	putMessages: function (messages) {
+		for (var i = 0; i < messages.length; ++i) {
+			var message = this.processMessage(messages[i]);
+			this.messages[messages[i].id] = message;
+			if (message.id > this.info.top_message)
+				this.info.top_message = message.id;
+		}
 	},
 	update: function() {
 		for (var k in this.onDialogUpdate)
@@ -218,7 +314,7 @@ var Peer = Class.extend({
 			this.info.photo = null;
 		if (dialog.user) {
 			this.access_hash = dialog.user.access_hash;
-			this.info.title = (dialog.user.first_name||'') + (dialog.user.last_name ? ' '+dialog.user.last_name : '');
+			this.info.title = title(dialog.user);
 			this.info.short = ((dialog.user.first_name||'').trim()[0] + (dialog.user.last_name ? (dialog.user.last_name||'').trim()[0] : '')).toUpperCase();
 			this.info.phone = dialog.user.phone;
 			if (dialog.user.photo && dialog.user.photo._ !== 'userProfilePhotoEmpty' &&
@@ -228,14 +324,14 @@ var Peer = Class.extend({
 		if (dialog.channel || dialog.chat) {
 			var d = dialog.channel || dialog.chat;
 			this.access_hash = d.access_hash;
-			this.info.title = d.title;
+			this.info.title = title(d);
 			this.info.short = this.info.title.trim().slice(0, 2).toUpperCase();
 			if (d.photo && d.photo._ !== 'chatPhotoEmpty' && d.photo._ !== 'channelPhotoEmpty' &&
 				(!this.info.photo || this.info.photo.id !== S(d.photo.photo_id)))
 				this.info.photo = new Photo(d.photo, this);
 		}
 		if (dialog.message) {
-			this.messages[this.info.top_message] = dialog.message;
+			this.messages[this.info.top_message] = this.processMessage(dialog.message);
 			this.holes.push({
 				dir: true, // before
 				id: dialog.message.id
@@ -343,6 +439,11 @@ function receiveDialogs(offset, status, result) {
 			peer.updateAsDialog(dialog);
 		}
 	}
+
+	for (var i = 0; i < result.users.length; ++i)
+		users[result.users[i].id] = result.users[i];
+	for (var i = 0; i < result.chats.length; ++i)
+		chats[result.chats[i].id] = result.chats[i];
 
 	if (offset == 0)
 		clearDialogs();

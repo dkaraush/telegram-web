@@ -48,25 +48,64 @@ function formatLastMessageDate(date) {
 	return month+'.'+date+'.'+year;
 }
 
-function msg(message, peer) {
+const actionTitles = {
+	ChatCreated: "Chat was created",
+	ChatEditTitle: "Chat's title was changed",
+	ChatEditPhoto: "Chat's photo was changed",
+	ChatDeletePhoto: "Chat's photo was deleted",
+	ChatAddUser: "{user} joined",
+	ChatDeleteUser: "{user} was deleted",
+	ChatJoinedByLink: "{user} joined by link",
+	ChannelCreate: "Channel was created",
+	ChatMigrateTo: "Chat migrated to {channel}",
+	ChannelMigrateFrom: "Channel migrated from {chat}",
+	PinMessage: "Message pinned",
+	HistoryClear: "History was cleared",
+	GameScore: "Scored {score}",
+	PaymentSentMe: "Payment sent to you",
+	PaymentSent: "Payment sent",
+	PhoneCall: "Phone call",
+	ScreenshotTaken: "Screenshot taken",
+	CustomAction: "{message}",
+	BotAllowed: "Logged in {domain}",
+	SecureValuesSentMe: "Secure values",
+	SecureValuesSent: "Secure values",
+	ContactSignUp: "Signed up in Telegram!"
+}
+function shortMessageElement(message, peer) {
 	if (message == null || message._ == 'messageEmpty')
 		return '';
 	if (message._ == 'message') {
 		var m = $new('span', message.message);
-		if (peer.type == "u" || peer.type == "C") {
+		if (peer.type == "u" || peer.type == "c") {
 			if (message.pFlags.out) {
 				return [$new('span.active', 'You: '), m];
 			} else if (peer.type == 'u') {
 				return [m];
 			} else {
-				// var user = 
-				return [$new('span.active', ': '), m]
+				var user = users[message.from_id];
+				if (user)
+					return [$new('span.active', title(user) +': '), m]
+				else return [m];
 			}
 		} else {
 			return [m];
 		}
-	} else {
-		return [];
+	} else if (message._ == 'messageService') {
+		var s = actionNames[message.action._.slice(12)];
+		if (message.user_id)
+			s = s.replace('{user}', title(users[message.user_id])||'');
+		if (message.chat_id)
+			s = s.replace('{chat}', title(chats[message.chat_id])||'');
+		if (message.channel_id)
+			s = s.replace('{chat}', title(chats[message.channel_id])||'');
+		if (message.message)
+			s = s.replace('{message}', message.message);
+		if (message.domain)
+			s = s.replace('{domain}', message.domain);
+		if (message.score)
+			s = s.replace('{score}', message.score);
+		return [$new('span.active', s)];
 	}
 }
 
@@ -76,15 +115,17 @@ function peerImage(peer) {
 	var a = [$new('div.empty', peer.info.short, [], function (el) {
 				el.style.backgroundColor = userColors[(parseInt(peer.id.slice(1)) % userColors.length)];
 			})];
-	if (peer.info.photo != null && peer.info.photo.smallLoaded)
+	if (peer.info.photo != null && peer.info.photo.src != null)
 		a.push(_peerImage(peer));
 	return a;
 }
-function _peerImage(peer) {
+function _peerImage(peer, appearing) {
 	return $new('img', null, [], function (el) {
-					el.src = peer.info.photo.smallSrc;
-					el.style.opacity = 0;
-					$t(16, function () {el.style.opacity = 1});
+					el.src = peer.info.photo.src;
+					if (appearing) {
+						el.style.opacity = 0;
+						$t(16, function () {el.style.opacity = 1});
+					}
 				});
 }
 function dialogElement(peer) {
@@ -92,27 +133,27 @@ function dialogElement(peer) {
 		einfo, etitle, edate, elastMessage;
 	dialogListeners.push(peer.id + '-' + peer.listenDialog(function (new_peer) {
 		var pic = el.querySelector('.picture');
-		if (new_peer.info.photo && new_peer.info.photo.smallLoaded &&
+		if (new_peer.info.photo && new_peer.info.photo.src != null &&
 			pic.querySelector('img') == null) {
-			var img = _peerImage(new_peer)
+			var img = _peerImage(new_peer, true)
 			pic.appendChild(img);
 		}
 
 		etitle.innerText = new_peer.info.title;
 		var message = new_peer.messages[new_peer.info.top_message];
-		if (message && einfo.id != 'l--'+message.id) {
+		if (message && einfo.id != 'm--'+message.id) {
 			edate.innerText = formatLastMessageDate(message.date);
 			elastMessage.innerHTML = '';
-			$append(elastMessage, msg(message, new_peer));
-			einfo.id = 'l--'+message.id;
+			$append(elastMessage, shortMessageElement(message, new_peer));
+			einfo.id = 'm--'+message.id;
 		}
 	}));
 	return el = $new('div.dialog#'+peer.id, null, [
 		$new('div.picture', null, peerImage(peer)),
-		einfo=$new('div.info'+(message?'#l--'+message.id:''), null, [
+		einfo=$new('div.info'+(message?'#m--'+message.id:''), null, [
 			etitle=$new('h2', peer.info.title),
 			edate=$new('span.date', formatLastMessageDate(message.date)),
-			elastMessage=$new('span.content', null, msg(message, peer))
+			elastMessage=$new('span.content', null, shortMessageElement(message, peer))
 		])
 	], UI.addRipple, $click(function () {
 		openPeer(peer);

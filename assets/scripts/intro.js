@@ -495,6 +495,7 @@ function startIntro() {
 			}
 
 			$rmclass($('#c-password button'), 'loading');
+			$('#c-password .input .placeholder').innerText = data.hint || 'Password';
 			passwordInited = true;
 		});
 	}
@@ -512,38 +513,16 @@ function startIntro() {
 		return SH(pbkdf2(PH1(password, salt1, salt2), salt1, 100000), salt2);
 	}
 	function pbkdf2(password, salt, iterations, len, hashType) {
-		var out = new ArrayBuffer();
-		var md, prev, i, j;
-		var num = 0;
-		var block = concat(salt, new ArrayBuffer(4));
-		while (out.length < len) {
-			num++;
-			block.writeUInt32BE(num, salt.length);
-			// prev = crypto.createHmac(hashType, password)
-			//   .update(block)
-			//   .digest();
+		var enc = new TextEncoder();
+		var key = window.crypto.subtle.importKey(
+			'raw', enc.encode(password), {name: 'PBKDF2'}, false, ['deriveBits', 'deriveKey']);
 
-			md = prev;
-			i = 0;
-			while (++i < iterations) {
-				// prev = crypto.createHmac(hashType, password)
-				// 	.update(prev)
-				// 	.digest();
-				prev = H(password);
-				j = -1;
-				while (++j < prev.length) {
-					md[j] ^= prev[j]
-				}
-			}
-			out = concat(out, md);
-		}
-		return out.slice(0, len);
 	}
 
 	function submitPassword() {
 		if (!passwordInited)
 			return;
 
-		proto.sendAPIMethod('account')
+		proto.sendAPIMeth
 	}
 }

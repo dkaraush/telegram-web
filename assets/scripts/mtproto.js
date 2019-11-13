@@ -187,7 +187,7 @@ var MTProto = Class.extend({
 	debugBinary: function (name, buff) {
 		if (!this._debug)
 			return;
-		// console.log(this.prefix(), name, '[' + buff.byteLength + ']', S(buff));
+		console[console.debug?'debug':'log'](this.prefix(), name, '[' + buff.byteLength + ']', S(buff));
 	},
 	warn: function () {
 		console.warn.apply(this, [this.prefix()].concat(arr(arguments)));
@@ -220,7 +220,7 @@ var MTProto = Class.extend({
 				m.sendRaw(header);
 
 			if (m.auth_key == null) {
-				m.client_nonce = randomBytes(16);
+				m.client_nonce = secureRandomBytes(16);
 				m.sendMethod('req_pq_multi', {nonce: m.client_nonce});
 			} else {
 				if (typeof onConnected === 'function')
@@ -458,6 +458,8 @@ var MTProto = Class.extend({
 				this.server_salt = new Uint8Array(msg.server_salt).buffer;
 				this.save({server_salt: this.server_salt});
 				this.acks.push(msg_id);
+			} else if (msg._ == 'updates' || msg._ == 'updateShort') {
+
 			}
 
 			return;
@@ -470,54 +472,56 @@ var MTProto = Class.extend({
 
 			this.pq = Braw(msg.pq);
 			this.debugBinary('PQ:', this.pq);
-			var pqDecomposed = decomposePQ(this.pq);
-			this.p = B(pqDecomposed.p, 4);
-			this.q = B(pqDecomposed.q, 4);
+			var self = this;
+			decomposePQ(this.pq, function (pqDecomposed) {
+				self.p = B(pqDecomposed.p, 4);
+				self.q = B(pqDecomposed.q, 4);
 
-			var p = bigInt(pqDecomposed.p, 16);
-			var q = bigInt(pqDecomposed.q, 16);
-			if (p.compareTo(q) > 0) {
-				var temp = this.q;
-				this.q = this.p;
-				this.p = temp;
-				this.debug('q should be bigger!');
-			}
+				var p = bigInt(pqDecomposed.p, 16);
+				var q = bigInt(pqDecomposed.q, 16);
+				if (p.compareTo(q) > 0) {
+					var temp = self.q;
+					self.q = self.p;
+					self.p = temp;
+					self.debug('q should be bigger!');
+				}
 
-			this.debugBinary('P:', this.p);
-			this.debugBinary('Q:', this.q);
+				self.debugBinary('P:', self.p);
+				self.debugBinary('Q:', self.q);
 
-			this.serverPublicKey = selectPublicKey(publicKeys, msg.server_public_key_fingerprints);
-			this.debug('selected public key:', this.serverPublicKey);
+				self.serverPublicKey = selectPublicKey(publicKeys, msg.server_public_key_fingerprints);
+				self.debug('selected public key:', self.serverPublicKey);
 
-			this.new_nonce = randomBytes(32);
-			var data = serializeObject('p_q_inner_data', {
-				pq: (this.pq),
-				p: (this.p),
-				q: (this.q),
-				nonce: this.client_nonce,
-				server_nonce: this.server_nonce,
-				new_nonce: this.new_nonce
-			});
+				self.new_nonce = secureRandomBytes(32);
+				var data = serializeObject('p_q_inner_data', {
+					pq: (self.pq),
+					p: (self.p),
+					q: (self.q),
+					nonce: self.client_nonce,
+					server_nonce: self.server_nonce,
+					new_nonce: self.new_nonce
+				});
 
-			this.debugBinary('inner_data:',data);
-			this.debug(new Uint8Array(B(sha1(data))));
-			this.debugBinary('inner_data_hash:', B(sha1(data)));
-			var data_with_hash = concat(B(sha1(data)), data, randomBytes(255 - 20 - data.byteLength));
-			this.debugBinary('data_with_hash:', data_with_hash);
+				self.debugBinary('inner_data:',data);
+				self.debug(new Uint8Array(B(sha1(data))));
+				self.debugBinary('inner_data_hash:', B(sha1(data)));
+				var data_with_hash = concat(B(sha1(data)), data, randomBytes(255 - 20 - data.byteLength));
+				self.debugBinary('data_with_hash:', data_with_hash);
 
-			// if (S(data_with_hash.slice(0, 20)) != sha1(data_with_hash.slice(20, data.byteLength+20)))
-			// 	console.warn('WTF?')
+				// if (S(data_with_hash.slice(0, 20)) != sha1(data_with_hash.slice(20, data.byteLength+20)))
+				// 	console.warn('WTF?')
 
-			var encrypted_data = encryptRSA(data_with_hash, this.serverPublicKey);
-			this.debugBinary('encrypted_data: ', encrypted_data);
+				var encrypted_data = encryptRSA(data_with_hash, self.serverPublicKey);
+				self.debugBinary('encrypted_data: ', encrypted_data);
 
-			this.sendMethod('req_DH_params', {
-				nonce: this.client_nonce,
-				server_nonce: this.server_nonce,
-				p: this.p,
-				q: this.q,
-				public_key_fingerprint: B(this.serverPublicKey.fingerprint),
-				encrypted_data: encrypted_data
+				self.sendMethod('req_DH_params', {
+					nonce: self.client_nonce,
+					server_nonce: self.server_nonce,
+					p: self.p,
+					q: self.q,
+					public_key_fingerprint: B(self.serverPublicKey.fingerprint),
+					encrypted_data: encrypted_data
+				});
 			});
 		} else if (msg._ == 'server_DH_params_ok' && msg.auth_key == null) {
 			if (S(msg.nonce) !== S(this.client_nonce))
@@ -591,34 +595,38 @@ var MTProto = Class.extend({
 			if (sha1(answer_data.slice(0, TL.offset)) != S(answer_hash))
 				this.warn('hash of data mismatch');
 
-			this.b = bigInt(S(randomBytes(256)), 16);
+			this.b = bigInt(S(secureRandomBytes(256)), 16);
 			this.debug('B:', this.b.toString(16));
-			this.gB = EuclideanModPow(this.g, this.b, this.dh_prime);
-			var innerData = serializeObject('client_DH_inner_data', {
-				nonce: this.client_nonce,
-				server_nonce: this.server_nonce,
-				retry_id: B(str(this.retryID), 8),
-				g_b: B(this.gB.toString(16), 256)
-			});
-			this.debugBinary('inner_data:', innerData);
-			var paddingLength = 16 - ((innerData.byteLength+20) % 16);
-			var data_with_hash = concat(B(sha1(innerData)), innerData, randomBytes(paddingLength));
-			this.debugBinary('data_with_hash:', data_with_hash);
-			var encrypted_data = new Uint8Array(bytesFromWords(
-									CryptoJS.AES.encrypt(
-											bytesToWords(data_with_hash), 
-											bytesToWords(this.tmp_aes_key), 
-											{
-												iv: bytesToWords(this.tmp_aes_iv),
-												padding: CryptoJS.pad.NoPadding,
-												mode: CryptoJS.mode.IGE
-											}).ciphertext
-								)).buffer;
+			var self = this;
+			EuclideanModPow(this.g, this.b, this.dh_prime, function (gB) {
+				self.gB = gB;
+			
+				var innerData = serializeObject('client_DH_inner_data', {
+					nonce: self.client_nonce,
+					server_nonce: self.server_nonce,
+					retry_id: B(str(self.retryID), 8),
+					g_b: B(self.gB.toString(16), 256)
+				});
+				self.debugBinary('inner_data:', innerData);
+				var paddingLength = 16 - ((innerData.byteLength+20) % 16);
+				var data_with_hash = concat(B(sha1(innerData)), innerData, randomBytes(paddingLength));
+				self.debugBinary('data_with_hash:', data_with_hash);
+				var encrypted_data = new Uint8Array(bytesFromWords(
+										CryptoJS.AES.encrypt(
+												bytesToWords(data_with_hash), 
+												bytesToWords(self.tmp_aes_key), 
+												{
+													iv: bytesToWords(self.tmp_aes_iv),
+													padding: CryptoJS.pad.NoPadding,
+													mode: CryptoJS.mode.IGE
+												}).ciphertext
+									)).buffer;
 
-			this.sendMethod('set_client_DH_params', {
-				nonce: this.client_nonce,
-				server_nonce: this.server_nonce,
-				encrypted_data: encrypted_data
+				self.sendMethod('set_client_DH_params', {
+					nonce: self.client_nonce,
+					server_nonce: self.server_nonce,
+					encrypted_data: encrypted_data
+				});
 			});
 		} else if (msg._ == "dh_gen_ok" && this.auth_key == null) {
 			if (S(msg.nonce) !== S(this.client_nonce))
@@ -1036,9 +1044,16 @@ function or(a, b) {
 		_c[i] = _a[i] | _b[i];
 	return _c.buffer;
 }
-function EuclideanModPow(a, b, m) {
-	var x = a.modPow(b, m);
-	return x.isNegative() ? x.add(m) : x;
+
+function EuclideanModPow(a, b, m, cb) {
+	if (cb) {
+		a.modPow(b, m, function (x) {
+			cb(x.isNegative() ? x.add(m) : x);
+		});
+	} else {
+		var x = a.modPow(b, m);
+		return x.isNegative() ? x.add(m) : x;
+	}
 }
 function reverse(buff) {
 	var a = new Uint8Array(buff),
@@ -1125,6 +1140,14 @@ function randomBytes(n) {
 		b[i] = rand(0, 255);
 	return b.buffer;
 }
+function secureRandomBytes(n) {
+	if (window.crypto && window.crypto.getRandomValue) {
+		var arr = new Uint8Array(n);
+		window.crypto.getRandomValue(arr);
+		return arr.buffer;
+	}
+	return randomBytes(n);
+}
 function repeatByte(byte, n) {
 	if (byte instanceof ArrayBuffer)
 		byte = new Uint8Array(byte);
@@ -1157,11 +1180,13 @@ function bytesFromWords (wordArray) {
 
   return bytes
 }
-function decomposePQ(pq) {
+function decomposePQ(pq, callback) {
 	var n = bigInt(typeof pq === 'string' ? pq : S(pq), 16);
 
-	if (n.divmod(2).remainder == 0)
-		return {p: (2).toString(16), q: n.divmod(2).quotient.toString(16)};
+	if (n.divmod(2).remainder == 0) {
+		callback({p: (2).toString(16), q: n.divmod(2).quotient.toString(16)});
+		return;
+	}
 
 	var y = bigInt(rand(1, 1000)),
 		c = bigInt(rand(1, 1000)),
@@ -1169,7 +1194,13 @@ function decomposePQ(pq) {
 		g = bigInt(1), r = bigInt(1), q = bigInt(1);
 		x = bigInt(), ys = bigInt();
 
-	while (g == 1) {
+	// while (g == 1) {
+	function sub(cb) {
+		if (g.compare(bigInt(1)) != 0) {
+			cb();
+			return;
+		}
+
 		x = y;
 		for (var i = bigInt(1); i.compare(r) < 1; i = i.plus(1))
 			y = y.multiply(y).divmod(n).remainder.plus(c).divmod(n).remainder;
@@ -1184,18 +1215,23 @@ function decomposePQ(pq) {
 			k = k.plus(m)
 		}
 		r = r.multiply(2);
+		$n(function () {sub(cb)});
 	}
-
-	if (g == n) {
-		while (true) {
-			ys = ys.multiply(ys).divmod(n).remainder.plus(c).divmod(n).remainder;
-			g = g.multiply(x.minus(ys).abs()).divmod(n).remainder;
-			if (g.compare(1) == -1)
-				break;
-		}
-	}
-
-	return {p: g.toString(16), q: n.divmod(g).quotient.toString(16)};
+	sub(function () {
+		if (g == n) {
+			function sub2(cb) {
+				ys = ys.multiply(ys).divmod(n).remainder.plus(c).divmod(n).remainder;
+				g = g.multiply(x.minus(ys).abs()).divmod(n).remainder;
+				if (g.compare(1) != -1)
+					$n(function(){sub2(cb)});
+				else cb();
+			}
+			sub2(function () {
+				callback({p: g.toString(16), q: n.divmod(g).quotient.toString(16)});	
+			});
+		} else
+			callback({p: g.toString(16), q: n.divmod(g).quotient.toString(16)});
+	})
 }
 function uint8(x) {
 	return new Uint8Array([x]).buffer;

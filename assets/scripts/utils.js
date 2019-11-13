@@ -6,6 +6,15 @@ $ = $doc.querySelector.bind($doc);
 $html = $('html');
 $arr = $doc.querySelectorAll.bind($doc);
 $t = function (time, func) {setTimeout(func, time)}
+if (!Object.keys) {
+    Object.keys = function (obj) {
+        var keys = [], k;
+        for (k in obj)
+            if (Object.prototype.hasOwnProperty.call(obj, k))
+                keys.push(k);
+        return keys;
+    };
+}
 $rmclass = function (el, name) {
 	var classes = (el.className||'').split(/ /g), i;
 	while ((i = classes.indexOf(name)) >= 0)
@@ -73,6 +82,11 @@ $onload = function (func) {
 	if ($loaded) func();
 	else $_onload.push(func);
 }
+$n = function (func) {
+	if (window.requestAnimationFrame)
+		window.requestAnimationFrame(func);
+	else $t(16, func);
+}
 $run = function (el, name, data) {
 	// el.dispatchEvent(new Event(name, {bubbles:true}));
 	var ev;
@@ -88,11 +102,12 @@ $run = function (el, name, data) {
 
 	el.dispatchEvent(ev);
 }
-$click = function (cb) {
+$evt = function (names, cb) {
 	return function (el) {
-		$ev(el, 'click', cb);
+		$ev(el, names, cb);
 	}
 }
+$click = $evt.bind(this, 'click');
 function arr(args) {
 	return Array.prototype.slice.apply(args);
 }
