@@ -55,6 +55,7 @@
 	overflow: hidden;
 	z-index: 10;
 	border-radius: 50%;
+	transition: background-color 0.2s ease-in-out;
 }
 #app #left-sidebar .Button.menu svg {
 	width: 19px;
@@ -142,6 +143,7 @@
 	-ms-user-select: none;
 	-moz-user-select: none;
 	-webkit-user-select: none;
+	transition: background-color;
 }
 #app #left-sidebar .dialog .picture {
 	position: absolute;
@@ -187,9 +189,9 @@
 	font-size: 13px;
 	white-space: nowrap;
 	overflow: hidden;
-	right: 30px;
+	right: 35px;
 	text-overflow: ellipsis;
-	height: 18px;
+	height: 17px;
 }
 #app #left-sidebar .dialog .info span.date {
 	position: absolute;
@@ -268,6 +270,7 @@
     font-size: 13px;
     position: absolute;
     top: 28px;
+    opacity: 0.5;
 }
 #app #content > div .header .picture .empty {
     width: 100%;
@@ -334,10 +337,12 @@
     right: 54px;
     display: inline-block;
     z-index: 2;
+    bottom: 5px;
 }
 
 .inputbox .emoji-select,
 .inputbox .attach {
+    transition: background-color 0.2s ease-in-out;
     position: absolute;
     bottom: 0;
     margin: 6px;
@@ -355,7 +360,7 @@
 }
 .inputbox .emoji-select .ripple,
 .inputbox .attach .ripple {
-    background: rgba(0,0,0,0.18);
+    background: rgba(0,0,0,0.08);
 }
 .inputbox .emoji-select svg,
 .inputbox .attach svg {
@@ -372,6 +377,8 @@
     resize: none;
     vertical-align: top;
     min-height: 100%;
+    max-width: 100%;
+    margin-bottom: -8px;
 }
 .sendbox .btn {
     position: absolute;
@@ -402,7 +409,7 @@
     margin: 11px 14px;
 }
 .sendbox .btn .ripple {
-	background: rgba(255,255,255,0.18);
+	background: rgba(255,255,255,0.25);
 }
 .sendbox .btn.msg .msg {opacity: 1;}
 .sendbox .btn.voice .voice {opacity: 1;}
@@ -415,7 +422,7 @@
 .messages > div > div > div {
     width: 100%;
     display: inline-block;
-    margin: 2px 0;
+    margin: 4px 0;
 }
 .messages > div > div > div > span {
     background: #FFFFFF;
@@ -426,7 +433,7 @@
     border-bottom-left-radius: 0;
     display: inline-block;
     position: relative;
-    max-width: 80%;
+    max-width: 75%;
 }
 .messages > div > div > div > span > span {
     font-size: 16px;
@@ -435,7 +442,7 @@
 }
 .messages > div > div > div > span > div {
     position: absolute;
-    right: 6px;
+    right: 8px;
     bottom: 1px;
     user-select: none;
 }
@@ -443,6 +450,7 @@
     font-size: 12px;
     letter-spacing: -0.25px;
     opacity: 0.5;
+    vertical-align: middle;
 }
 .messages > div > div > div.out {
     text-align: right;
@@ -508,4 +516,148 @@
     position: absolute;
     width: 12px;
     bottom: -3px;
+}
+.dialog .info svg.pin {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    background: rgba(0,0,0,0.25);
+    fill: #FFFFFF;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+}
+.dialog svg.verified {
+    width: 16px;
+    height: 16px;
+    vertical-align: top;
+    margin-left: 4px;
+    margin-top: -1px;
+}
+#content > div > div.header svg.verified {
+    width: 18px;
+    height: 18px;
+    vertical-align: top;
+    margin-left: 3px;
+}
+.messages > div > div > div > span > h2 {margin: 0;font-size: 12px;margin-bottom: 2px;}
+.messages > div > div > div > span > span.reply {
+    display: block;
+    width: 100%;
+    border-left: 2px solid #66BA63;
+    padding-left: 5px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+.messages > div > div > div > span > span.reply .ripple {
+    background-color: rgba(0,0,0,0.08);
+}
+.messages > div > div > div > span > span.reply > h2 {
+    margin: 0;
+    font-size: 14px;
+}
+.messages > div > div > div.in > span > span.reply {
+    border-color: rgba(0,0,0,0.7);
+}
+.dialog div.picture span {
+    background-color: #4EA4F6;
+    width: 10px;
+    height: 10px;
+    border: 1px solid #FFFFFF;
+    position: absolute;
+    border-radius: 50%;
+    z-index: 999;
+    bottom: 0;
+    right: 0;
+    transform: scale(0);
+    transition: transform 0.2s ease-in-out;
+}
+.dialog.online div.picture span,
+.dialog div.picture.online span {
+    transform: scale(1);
+}
+#app #left-sidebar .dialog:hover {
+    background-color: rgba(0,0,0,0.08);
+}
+#left-sidebar .Button.menu:hover {
+    background-color: rgba(0,0,0,0.08);
+}
+.header p.online {
+    color: #4EA4F6;
+    opacity: 1 !important;
+}
+.messages > div > div > div > span > span.photo {display: block;margin: -6px -40px 7px -9px;border-top-left-radius: 8px;border-top-right-radius: 8px;overflow: hidden;min-width: 287px;}
+.messages > div > div > div > span > span.photo > img {
+	border: none;
+	display: block;
+	outline: none;
+	width: 100%;
+	height: auto;
+}
+.messages > div > div > div.photo > span > span.photo {
+    margin-bottom: -6px;
+    /* max-width: 100%; */
+}
+.messages > div > div > div.photo > span {
+    overflow: hidden;
+    border-radius: 8px;
+}
+.messages > div > div > div.photo > span > div {
+    background-color: rgba(0,0,0,0.2);
+    color: #FFFFFF;
+    padding: 1px 7px;
+    border-radius: 11px;
+    bottom: 6px;
+}
+.messages > div > div > div.usertitle > span > span.photo {
+    border-radius: 0;
+    margin-top: 5px;
+}
+.messages > div > div > div.photo > span > div > span.time {
+    color: #FFFFFF !important;
+    opacity: 1;
+}
+.messages > div > div > div > span > div > span.views > span {
+    font-size: 12px;
+    opacity: 0.5;
+    letter-spacing: -0.25px;
+    vertical-align: middle;
+}
+.messages > div > div > div > span > div > span.views > svg {
+    opacity: 0.5;
+    vertical-align: middle;
+    width: 15px;
+    margin-right: 4px;
+}
+.messages > div > div > div > span > div > span.views {
+    margin-right: 10px;
+}
+.messages > div > div > div.photo > span > div > span.views > span {
+    color: #FFFFFF;
+    opacity: 1;
+}
+
+.messages > div > div > div.photo > span > div > span.views > svg {
+    fill: #FFFFFF;
+    opacity: 1;
+}
+.messages > div > div > div.views > span {
+    padding-bottom: 25px;
+}
+
+.messages > div > div > div.photo > span {
+    padding-bottom: 6px;
+}
+
+.messages > div > div > div.out > span > div > span.views > span {
+    color: #66BA63;
+    opacity: 0.8;
+}
+
+.messages > div > div > div.out > span > div > span.views > svg {
+    opacity: 1;
+    fill: #66BA63;
 }

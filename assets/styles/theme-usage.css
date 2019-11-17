@@ -11,6 +11,7 @@ body {
 	background-color: scrollBg;
 	opacity: scrollBg(alpha);
 	width: 5px;
+	height: 5px;
 	border-radius: 5px;
 }
 *::-webkit-scrollbar-thumb {
@@ -141,5 +142,12 @@ body {
 	color: leftSidebarDialogContentFg;
 }
 #app #left-sidebar .dialog .info span.content span.active {
-	color: leftSidebarDialogContentBoldFg;
+	color: windowActiveTextFg;
+}
+#app #left-sidebar .dialog:hover,
+#left-sidebar .Button.menu:hover {
+	background-color: rippleBg;
+}
+#content {
+	background-color: contentBg;
 }

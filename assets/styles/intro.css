@@ -382,7 +382,7 @@
 	border-radius: 50%;
 	overflow: hidden;
 	cursor: pointer;
-	z-index: 100;
+	z-index: 101;
 }
 #intro .input.password input {
 	padding-right: 40px;

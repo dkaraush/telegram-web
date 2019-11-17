@@ -1,5 +1,3 @@
-
-
 windowBg: #17212b; // white: fallback for background
 windowFg: #f5f5f5; // black: fallback for text
 windowBgOver: #232e3c; // light gray: fallback for background with mouse over
@@ -15,9 +13,61 @@ windowActiveTextFg: #6ab3f3; // online blue: fallback for active text like onlin
 windowShadowFg: #000000; // black: fallback for shadow
 windowShadowFgFallback: #17212b; // gray: fallback for shadow without opacity
 
+rippleBg: #FFFFFF14;
+scrollBarBg: #00000053;
+scrollBarBgOver: #0000007a;
+scrollBg: #0000001a;
+scrollBgOver: #0000002a;
 shadowFg: #04080e56; // most shadows (including opacity)
 slideFadeOutBg: #0000003c; // slide animation (chat to profile) fade out filling
 slideFadeOutShadowFg: windowShadowFg; // slide animation (chat to profile) fade out right section shadow
+
+introBg: windowBg; // login background
+introTitleFg: windowBoldFg; // login title text
+introDescriptionFg: windowSubTextFg; // login description text
+introErrorFg: windowSubTextFg; // login error text (like when providing a wrong log in code)
+
+introLogoBg: #4EA4F6;
+introLogoFg: #FFFFFF;
+introInputBorder: #E0E2E5;
+introInputPlaceholderFg: #BEC5CB;
+introInputActiveBorder: #6CB3F7;
+introInputActivePlaceholderFg: #6CB3F7;
+introInputArrow: #9AA2A7;
+introInputActiveArrow: #6CB3F7;
+introInputErrorFg: #E53935;
+introInputErrorBorder: introInputErrorFg;
+
+introSelectElementRipple: rippleBg;
+introInputButtonRipple: rippleBg;
+introInputButtonFg: #8D969C;
+
+introCheckboxBg: #4EA4F6;
+introCheckboxFg: windowFg;
+introActiveButtonBg: #4EA4F6;
+introActiveButtonFg: #FFFFFF;
+introActiveButtonBgRipple: #FFFFFF18;
+
+introEditButtonFg: #000000;
+introEditButtonRippleBg: rippleBg;
+
+introErrorFg: #F44336;
+
+appBg: windowBg;
+appBorder: #E0E2E5;
+leftSidebarBg: windowBg;
+leftSidebarMenuButtonFg: #888C8F;
+leftSidebarMenuButtonRippleBg: rippleBg;
+leftSidebarSearchboxBg: #F4F4F5;
+leftSidebarSearchboxFg: #A3AAAF;
+leftSidebarDialogBg: windowBg;
+leftSidebarDialogRippleBg: rippleBg;
+leftSidebarDialogContentFg: #8D9195;
+leftSidebarDialogContentBoldFg: #000000;
+rightSidebarBg: windowBg;
+appContentBg: #E6EBEE;
+
+
 
 activeButtonBg: #2f6ea5; // default active button background
 activeButtonBgOver: #3476ab; // default active button background with mouse over
@@ -52,3 +102,6 @@ introCheckboxFg: windowFg;
 introActiveButtonBg: activeButtonBg;
 introActiveButtonBgRipple: activeButtonBgRipple;
 introActiveButtonFg: activeButtonFg;
+
+appBg: 
+contentBg: windowBg;

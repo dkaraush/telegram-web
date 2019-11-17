@@ -63,7 +63,7 @@
 					<h1>
 						<span></span><div class="edit Button">
 							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-							<path d="M7.70710678,20.7071068 C7.5195704,20.8946432 7.26521649,21 7,21 L4,21 C3.44771525,21 3,20.5522847 3,20 L3,17 C3,16.7347835 3.10535684,16.4804296 3.29289322,16.2928932 L16.5857864,3 C17.3257272,2.26005924 18.5012114,2.22111499 19.2869988,2.88316725 L19.4142136,3 L21,4.58578644 C21.7399408,5.3257272 21.778885,6.50121136 21.1168328,7.28699879 L21,7.41421356 L7.70710678,20.7071068 Z M5,17.4142136 L5,19 L6.58578644,19 L16.5857864,9 L15,7.41421356 L5,17.4142136 Z M18,4.41421356 L16.414,5.99921356 L18,7.58521356 L19.5857864,6 L18,4.41421356 Z"></path>
+								<use xlink:href="#edit"></use>
 							</svg>
 						</div>
 					</h1>
@@ -85,10 +85,14 @@
 						<input type="password">
 						<span class='button btn'>
 							<span class='non-visible'>
-								<object type="image/svg+xml" data="assets/img/icons/eye_visible.svg"></object>
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+									<use xlink:href="#eye"></use>
+								</svg>
 							</span>
 							<span class="visible">
-								<object type="image/svg+xml" data="assets/img/icons/eye_invisible.svg"></object>
+								<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+									<use xlink:href="#eye-cross"></use>
+								</svg>
 							</span>
 						</span>
 					</div>
@@ -155,112 +159,18 @@
 						
 					</div>
 					<div class="search" style="display: none">
-						<p>10 results.</p>
 						<div>
-							<div class="dialog Button">
-								<div class="picture">
-									<img src="https://avatars0.githubusercontent.com/u/30215770?s=460&v=4"></img>
-								</div>
-								<div class="info">
-									<h2>Dmitriy Karaush</h2>
-									<span class="date">Wed</span>
-									<span class="content">Hey, how are you?</span>
-								</div>
-							</div>
-							<div class="dialog Button">
-								<div class="picture">
-									<img src="https://avatars0.githubusercontent.com/u/30215770?s=460&v=4"></img>
-								</div>
-								<div class="info">
-									<h2>Dmitriy Karaush</h2>
-									<span class="date">Wed</span>
-									<span class="content">Hey, how are you?</span>
-								</div>
-							</div>
 						</div>
 					</div>
+				</div>
+				<div class='settings'>
+					
 				</div>
 			</div>
 			<div id="content" class="empty">
 				<div class="empty" style="display: block;">
 					
 				</div>
-				<!-- <div class="u777000 hasInput">
-					<div class="header">
-						<div class="picture">
-							<div class="empty"></div>
-							<img src="" />
-						</div>
-						<div class="info">
-							<h2>[shpp] afterc</h2>
-							<p>10 members</p>
-						</div>
-					</div>
-					<div class="content">
-						<div class="messages">
-							<div>
-								<div>
-									<div class="in">
-										<span>
-											<span>Hello, world!</span>
-											<div>
-												<span class="time">15:35</span>
-											</div>
-										</span>
-									</div>
-									<div class="sys">
-										<span>
-											<span>dima joined chat</span>
-										</span>
-									</div>
-									<div class="out">
-										<span>
-											<span>Hello, Steven!</span>
-											<div>
-												<span class="time">16:38</span>
-											</div>
-										</span>
-									</div>
-								</div>
-							</div>
-						</div>
-						<div class="sendbox">
-							<div>
-								<div class='gradient'></div>
-								<div class="inputbox">
-									<div class="Button emoji-select">
-										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-											<use xlink:href="#emoji-select" />
-										</svg>
-									</div>
-									<div class='text'>
-										<textarea rows="1" placeholder="Write a message..."></textarea>
-									</div>
-									<div class="Button attach">
-										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-											<use xlink:href="#attach" />
-										</svg>
-									</div>
-									<svg viewBox="15 12 11 20" class="corner">
-										<use xlink:href="#corner" />
-									</svg>
-								</div>
-								<div class="btn msg Button">
-									<div class="msg">
-										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-											<use xlink:href="#send" />
-										</svg>
-									</div>
-									<div class="voice">
-										<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-											<use xlink:href="#mic" />
-										</svg>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div> -->
 			</div>
 		</div>
 	</div>
@@ -276,9 +186,8 @@
 	<script type="text/javascript" src="assets/scripts/libs/aes.js"></script>
 	<script type="text/javascript" src="assets/scripts/libs/crypto.js"></script>
 	<script type="text/javascript" src="assets/scripts/mtproto.js"></script>
-	<script type="text/javascript" src="assets/scripts/api.js"></script>
-	<script type="text/javascript" src="assets/scripts/text.js"></script>
 	<script type="text/javascript" src="assets/scripts/main.js"></script>
+	<script type="text/javascript" src="assets/scripts/api.js"></script>
 	<script type="text/javascript" src="assets/scripts/ui.js"></script>
 
 	<script type="text/javascript" src="assets/scripts/libs/lottie.min.js"></script>
@@ -297,6 +206,15 @@
 					<feMergeNode in="SourceGraphic"/>
 				</feMerge>
 			</filter>
+			<g id="edit">
+				<path d="M7.70710678,20.7071068 C7.5195704,20.8946432 7.26521649,21 7,21 L4,21 C3.44771525,21 3,20.5522847 3,20 L3,17 C3,16.7347835 3.10535684,16.4804296 3.29289322,16.2928932 L16.5857864,3 C17.3257272,2.26005924 18.5012114,2.22111499 19.2869988,2.88316725 L19.4142136,3 L21,4.58578644 C21.7399408,5.3257272 21.778885,6.50121136 21.1168328,7.28699879 L21,7.41421356 L7.70710678,20.7071068 Z M5,17.4142136 L5,19 L6.58578644,19 L16.5857864,9 L15,7.41421356 L5,17.4142136 Z M18,4.41421356 L16.414,5.99921356 L18,7.58521356 L19.5857864,6 L18,4.41421356 Z"></path>
+			</g>
+			<g id="eye-cross">
+				<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+			</g>
+			<g id="eye">
+				<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"></path>
+			</g>
 			<g id="emoji-select">
 				<path d="M12,1 C18.0751322,1 23,5.92486775 23,12 C23,18.0751322 18.0751322,23 12,23 C5.92486775,23 1,18.0751322 1,12 C1,5.92486775 5.92486775,1 12,1 Z M12,3 C7.02943725,3 3,7.02943725 3,12 C3,16.9705627 7.02943725,21 12,21 C16.9705627,21 21,16.9705627 21,12 C21,7.02943725 16.9705627,3 12,3 Z M6.66607426,13.6501686 C7.13342047,13.4117012 7.7055954,13.5972442 7.94406273,14.0645904 C8.71613228,15.5776856 10.2710663,16.5499921 12,16.5499921 C13.7262991,16.5499921 15.2792455,15.5806677 16.0525854,14.0711462 C16.2918118,13.6041881 16.8642875,13.419575 17.3312456,13.6588014 C17.7982037,13.8980278 17.9828168,14.4705034 17.7435904,14.9374615 C16.6482438,17.0755242 14.4462205,18.4499921 12,18.4499921 C9.55003677,18.4499921 7.34521255,17.0713067 6.2516524,14.928157 C6.01318507,14.4608108 6.19872805,13.8886359 6.66607426,13.6501686 Z M8.75,8 C9.44035594,8 10,8.67157288 10,9.5 C10,10.3284271 9.44035594,11 8.75,11 C8.05964406,11 7.5,10.3284271 7.5,9.5 C7.5,8.67157288 8.05964406,8 8.75,8 Z M15.25,8 C15.9403559,8 16.5,8.67157288 16.5,9.5 C16.5,10.3284271 15.9403559,11 15.25,11 C14.5596441,11 14,10.3284271 14,9.5 C14,8.67157288 14.5596441,8 15.25,8 Z"></path>
 			</g>
@@ -311,6 +229,14 @@
 			</g>
 			<g id="corner">
 				<path xmlns="http://www.w3.org/2000/svg" d="M18.0000271,29 L23.9999983,29 L23.9999983,12 C23.8069952,14.8392983 23.1238006,17.7667487 21.9504146,20.7823513 C21.0460458,23.1065797 19.5041296,25.2666259 17.3246662,27.26249 C16.9173386,27.6354732 16.889523,28.2680413 17.262523,28.6753536 C17.4519513,28.8822073 17.7195427,29 18.0000271,29 Z" style="filter:url(#sh)"></path>
+			</g>
+			<g id="pin">
+				<path d="M15.5076746,5.43106151 C15.6360364,5.50807857 15.7544683,5.60054738 15.8603181,5.70639721 L18.293754,8.13983316 C19.0087487,8.85482776 19.0087487,10.0140631 18.293754,10.7290577 C18.1879042,10.8349075 18.0694723,10.9273763 17.9411106,11.0043934 L16.0271139,12.1527914 C16.2818698,13.6727594 15.6636956,15.1719619 14.2486077,16.5870499 C13.9244725,16.911185 13.3989456,16.911185 13.0748104,16.5870499 L10.83,14.3428746 L7.58689863,17.5868986 C7.28977473,17.8840225 6.8234258,17.9087829 6.49809773,17.6611796 L6.41310137,17.5868986 C6.11597747,17.2897747 6.09121715,16.8234258 6.3388204,16.4980977 L6.41310137,16.4131014 L9.657,13.1688746 L7.41310137,10.9253408 C7.08896621,10.6012057 7.08896621,10.0756787 7.41310137,9.75154358 C8.75743492,8.40721003 10.1776819,7.78209116 11.6195283,7.94136145 L11.8473599,7.97303736 L12.9957579,6.05904069 C13.5159929,5.19198237 14.6406163,4.91082651 15.5076746,5.43106151 Z M14.4191961,6.91310365 L12.9555748,9.35247255 C12.7554257,9.68605435 12.3504433,9.8358671 11.9813866,9.71284821 C11.0837094,9.41362247 10.1767406,9.61176673 9.20691373,10.3715587 L13.6285926,14.7932375 L13.7730814,14.6000944 C14.4125932,13.7025228 14.5665804,12.8565967 14.287303,12.0187646 C14.1642842,11.649708 14.3140969,11.2447255 14.6476787,11.0445765 L17.10429,9.56911679 L17.1199568,9.55526042 C17.1866811,9.48853613 17.1866811,9.3803547 17.1199568,9.31363041 L14.6865208,6.88019447 L14.6536117,6.85449976 C14.5726966,6.80595071 14.4677452,6.83218857 14.4191961,6.91310365 Z"></path>
+			</g>
+			<g id="verified">
+				<rect id="Rectangle" fill="#4EA4F6" x="4" y="4" width="17" height="17"></rect>
+		        <rect id="Rectangle" fill="#4EA4F6" transform="translate(12.500000, 12.500000) rotate(-315.000000) translate(-12.500000, -12.500000)" x="4" y="4" width="17" height="17"></rect>
+		        <path fill="#FFFFFF" d="M10.8818602,14.7950207 L16.0926862,9.1670822 C16.280964,8.96373335 16.6080267,8.94312749 16.8232012,9.12105774 C17.0168583,9.28119496 17.0538854,9.54756978 16.9220997,9.74748469 L16.8719022,9.81142462 L11.2966853,15.8329225 C11.1192031,16.0246117 10.8206146,16.0526177 10.6083006,15.9104149 L10.5410091,15.8567009 L8.15163044,13.5986392 C7.94945652,13.4075765 7.94945652,13.0978026 8.15163044,12.9067399 C8.33358697,12.7347835 8.61729147,12.7175878 8.81959759,12.855153 L8.88376698,12.9067399 L10.8818602,14.7950207 L16.0926862,9.1670822 L10.8818602,14.7950207 Z"></path>
 			</g>
 		</defs>
 	</svg>

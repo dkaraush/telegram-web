@@ -18,11 +18,11 @@ windowBoldFg: #222222; // dark gray: fallback for bold text
 windowBoldFgOver: #222222; // dark gray: fallback for bold text with mouse over
 windowBgActive: #40a7e3; // bright blue: fallback for blue filled active areas
 windowFgActive: #ffffff; // white: fallback for text on active areas
-windowActiveTextFg: #168acd; // online blue: fallback for active text like online status
+windowActiveTextFg: #000000; // online blue: fallback for active text like online status
 windowShadowFg: #000000; // black: fallback for shadow
 windowShadowFgFallback: #f1f1f1; // gray: fallback for shadow without opacity
 
-rippleBg: #00000018;
+rippleBg: #00000014;
 scrollBarBg: #00000053;
 scrollBarBgOver: #0000007a;
 scrollBg: #0000001a;
@@ -63,7 +63,6 @@ introEditButtonRippleBg: rippleBg;
 
 introErrorFg: #F44336;
 
-
 appBg: windowBg;
 appBorder: #E0E2E5;
 leftSidebarBg: windowBg;
@@ -74,6 +73,7 @@ leftSidebarSearchboxFg: #A3AAAF;
 leftSidebarDialogBg: windowBg;
 leftSidebarDialogRippleBg: rippleBg;
 leftSidebarDialogContentFg: #8D9195;
-leftSidebarDialogContentBoldFg: #000000;
 rightSidebarBg: windowBg;
 appContentBg: #E6EBEE;
+
+contentBg: #E6EBEE;

@@ -1,15 +1,1 @@
-var auth = Storage.get('auth'), DC = Storage.get('DC')||2;
-var proto = new MTProto({
-	debug: true,
-	auth_key: (auth||{key:null}).key,
-	test: false,
-	DC: DC,
-	main: true
-});
-proto.connect();
-
-if (auth) {
-	startApp();
-} else {
-	startIntro();
-}
+var auth=Storage.get("auth"),DC=Storage.get("DC")||2,proto=new MTProto({debug:!0,auth_key:(auth||{key:null}).key,test:!1,DC:DC,main:!0});proto.connect();auth?startApp():startIntro();
