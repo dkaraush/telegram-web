@@ -1,50 +1,1274 @@
-/*
- Webogram v0.7.0 - messaging web application for MTProto
- https://github.com/zhukov/webogram
- Copyright (C) 2014 Igor Zhukov <igor.beatle@gmail.com>
- https://github.com/zhukov/webogram/blob/master/LICENSE
-*/
-var TLSerialization=window.TLSerialization=function(a){a=a||{};this.maxLength=a.startMaxLength||2048;this.offset=0;this.createBuffer();this.mtproto=a.mtproto||!1;return this};TLSerialization.prototype.createBuffer=function(){this.buffer=new ArrayBuffer(this.maxLength);this.intView=new Int32Array(this.buffer);this.byteView=new Uint8Array(this.buffer)};TLSerialization.prototype.getArray=function(){var a=new ArrayBuffer(this.offset);a=new Int32Array(a);a.set(this.intView.subarray(0,this.offset/4));return a};
-TLSerialization.prototype.getBuffer=function(){return this.getArray().buffer};TLSerialization.prototype.getBytes=function(a){if(a)return a=new ArrayBuffer(this.offset),a=new Uint8Array(a),a.set(this.byteView.subarray(0,this.offset)),a;a=[];for(var b=0;b<this.offset;b++)a.push(this.byteView[b]);return a};
-TLSerialization.prototype.checkLength=function(a){this.offset+a<this.maxLength||(console.trace("Increase buffer",this.offset,a,this.maxLength),this.maxLength=4*Math.ceil(Math.max(2*this.maxLength,this.offset+a+16)/4),a=new Int32Array(this.buffer),this.createBuffer(),(new Int32Array(this.buffer)).set(a))};TLSerialization.prototype.writeInt=function(a,b){this.debug&&console.log(">>>",a.toString(16),a,b);this.checkLength(4);this.intView[this.offset/4]=a;this.offset+=4};
-TLSerialization.prototype.storeInt=function(a,b){this.writeInt(a,(b||"")+":int")};TLSerialization.prototype.storeBool=function(a,b){a?this.writeInt(2574415285,(b||"")+":bool"):this.writeInt(3162085175,(b||"")+":bool")};TLSerialization.prototype.storeLongP=function(a,b,c){this.writeInt(b,(c||"")+":long[low]");this.writeInt(a,(c||"")+":long[high]")};
-TLSerialization.prototype.storeLong=function(a,b){if(a instanceof ArrayBuffer)return this.storeIntBytes(a,64,b);if(Array.isArray(a))return 2==a.length?this.storeLongP(a[0],a[1],b):this.storeIntBytes(a,64,b);"string"!=typeof a&&(a=a?a.toString():"0");var c=bigStringInt(a).divmod(bigint(4294967296));this.writeInt(intToUint(c.remainder.toJSNumber()),(b||"")+":long[low]");this.writeInt(intToUint(c.quotient.toJSNumber()),(b||"")+":long[high]")};
-TLSerialization.prototype.storeDouble=function(a,b){var c=new ArrayBuffer(8),d=new Int32Array(c);(new Float64Array(c))[0]=a;this.writeInt(d[0],(b||"")+":double[low]");this.writeInt(d[1],(b||"")+":double[high]")};
-TLSerialization.prototype.storeString=function(a,b){this.debug&&console.log(">>>",a,(b||"")+":string");void 0===a&&(a="");var c=unescape(encodeURIComponent(a));this.checkLength(c.length+8);var d=c.length;253>=d?this.byteView[this.offset++]=d:(this.byteView[this.offset++]=254,this.byteView[this.offset++]=d&255,this.byteView[this.offset++]=(d&65280)>>8,this.byteView[this.offset++]=(d&16711680)>>16);for(var e=0;e<d;e++)this.byteView[this.offset++]=c.charCodeAt(e);for(;this.offset%4;)this.byteView[this.offset++]=
-0};
-TLSerialization.prototype.storeBytes=function(a,b){a instanceof ArrayBuffer?a=new Uint8Array(a):void 0===a&&(a=[]);this.debug&&console.log(">>>",bytesToHex(a),(b||"")+":bytes");var c=a.byteLength||a.length;this.checkLength(c+8);253>=c?this.byteView[this.offset++]=c:(this.byteView[this.offset++]=254,this.byteView[this.offset++]=c&255,this.byteView[this.offset++]=(c&65280)>>8,this.byteView[this.offset++]=(c&16711680)>>16);this.byteView.set(a,this.offset);for(this.offset+=c;this.offset%4;)this.byteView[this.offset++]=0};
-TLSerialization.prototype.storeIntBytes=function(a,b,c){a instanceof ArrayBuffer&&(a=new Uint8Array(a));var d=a.length;if(b%32||8*d!=b)throw Error("Invalid bits: "+b+", "+a.length+" (field: "+c+")");this.debug&&console.log(">>>",bytesToHex(a),(c||"")+":int"+b);this.checkLength(d);this.byteView.set(a,this.offset);this.offset+=d};
-TLSerialization.prototype.storeRawBytes=function(a,b){a instanceof ArrayBuffer&&(a=new Uint8Array(a));var c=a.length;this.debug&&console.log(">>>",bytesToHex(a),b||"");this.checkLength(c);this.byteView.set(a,this.offset);this.offset+=c};
-TLSerialization.prototype.storeMethod=function(a,b){var c=window.Schema,d=!1,e;for(e=0;e<c.methods.length;e++)if(c.methods[e].method==a){d=c.methods[e];break}if(!d)throw Error("No method "+a+" found");this.storeInt(intToUint(d.id),a+"[id]");var f=d.params.length;for(e=0;e<f;e++){c=d.params[e];var g=c.type;if(-1!==g.indexOf("?")){g=g.split("?");var h=g[0].split(".");if(!(b[h[0]]&1<<h[1]))continue;g=g[1]}this.storeObject(b[c.name],g,a+"["+c.name+"]")}return d.type};
-TLSerialization.prototype.storeObject=function(a,b,c){switch(b){case "#":case "int":return this.storeInt(a,c);case "long":return this.storeLong(a,c);case "int128":return this.storeIntBytes(a,128,c);case "int256":return this.storeIntBytes(a,256,c);case "int512":return this.storeIntBytes(a,512,c);case "string":return this.storeString(a,c);case "bytes":return this.storeBytes(a,c);case "double":return this.storeDouble(a,c);case "Bool":return this.storeBool(a,c);case "true":return}if(Array.isArray(a)){if("Vector"==
-b.substr(0,6))this.writeInt(481674261,c+"[id]");else if("vector"!=b.substr(0,6))throw Error("Invalid vector type "+b);var d=b.substr(7,b.length-8+(">"!=b[b.length-1]?1:0));this.writeInt(a.length,c+"[count]");for(var e=0;e<a.length;e++)this.storeObject(a[e],d,c+"["+e+"]");return!0}if("vector"==b.substr(0,6).toLowerCase())throw Error("Invalid vector object");if("object"!=typeof a||null==a||Array.isArray(a))throw Error("Invalid object for type "+b);var f=window.Schema;d=a._;var g,h=!1;if(g="%"==b.charAt(0))b=
-b.substr(1);for(e=0;e<f.constructors.length;e++)if(f.constructors[e].predicate==d){h=f.constructors[e];break}if(!h)throw Error("No predicate "+d+" found");d==b&&(g=!0);g||this.writeInt(intToUint(h.id),c+"["+d+"][id]");g=h.params.length;for(e=0;e<g;e++){f=h.params[e];b=f.type;if(-1!==b.indexOf("?")){b=b.split("?");var l=b[0].split(".");if(!(a[l[0]]&1<<l[1]))continue;b=b[1]}this.storeObject(a[f.name],b,c+"["+d+"]["+f.name+"]")}return h.type};
-var TLDeserialization=window.TLDeserialization=function(a,b){b=b||{};this.offset=0;this.override=b.override||{};this.buffer=a;this.intView=new Uint32Array(this.buffer);this.byteView=new Uint8Array(this.buffer);this.mtproto=b.mtproto||!1;return this};TLDeserialization.prototype.readInt=function(a){if(this.offset>=4*this.intView.length)throw Error("Nothing to fetch: "+a);var b=this.intView[this.offset/4];this.debug&&console.log("<<<",b.toString(16),b,a);this.offset+=4;return b};
-TLDeserialization.prototype.fetchInt=function(a){return this.readInt((a||"")+":int")};TLDeserialization.prototype.fetchDouble=function(a){var b=new ArrayBuffer(8),c=new Int32Array(b);b=new Float64Array(b);c[0]=this.readInt((a||"")+":double[low]");c[1]=this.readInt((a||"")+":double[high]");return b[0]};TLDeserialization.prototype.fetchLong=function(a){var b=this.readInt((a||"")+":long[low]");a=this.readInt((a||"")+":long[high]");return(new Int32Array([b,a])).buffer};
-TLDeserialization.prototype.fetchBool=function(a){var b=this.readInt((a||"")+":bool");if(2574415285==b)return!0;if(3162085175==b)return!1;this.offset-=4;return this.fetchObject("Object",a)};
-TLDeserialization.prototype.fetchString=function(a){var b=this.byteView[this.offset++];254==b&&(b=this.byteView[this.offset++]|this.byteView[this.offset++]<<8|this.byteView[this.offset++]<<16);for(var c="",d=0;d<b;d++)c+=String.fromCharCode(this.byteView[this.offset++]);for(;this.offset%4;)this.offset++;try{var e=decodeURIComponent(escape(c))}catch(f){e=c}this.debug&&console.log("<<<",e,(a||"")+":string");return e};
-TLDeserialization.prototype.fetchBytes=function(a){var b=this.byteView[this.offset++];254==b&&(b=this.byteView[this.offset++]|this.byteView[this.offset++]<<8|this.byteView[this.offset++]<<16);var c=this.byteView.subarray(this.offset,this.offset+b);for(this.offset+=b;this.offset%4;)this.offset++;this.debug&&console.log("<<<",bytesToHex(c),(a||"")+":bytes");return c};
-TLDeserialization.prototype.fetchIntBytes=function(a,b,c){if(a%32)throw Error("Invalid bits: "+a);var d=a/8;if(b)return a=this.byteView.subarray(this.offset,this.offset+d),this.offset+=d,a;b=[];for(var e=0;e<d;e++)b.push(this.byteView[this.offset++]);this.debug&&console.log("<<<",bytesToHex(b),(c||"")+":int"+a);return(new Uint8Array(b)).buffer};
-TLDeserialization.prototype.fetchRawBytes=function(a,b,c){if(!1===a&&(a=this.readInt((c||"")+"_length"),a>this.byteView.byteLength))throw Error("Invalid raw bytes length: "+a+", buffer len: "+this.byteView.byteLength);if(b)return b=new Uint8Array(a),b.set(this.byteView.subarray(this.offset,this.offset+a)),this.offset+=a,b;b=[];for(var d=0;d<a;d++)b.push(this.byteView[this.offset++]);this.debug&&console.log("<<<",bytesToHex(b),c||"");return b};
-TLDeserialization.prototype.fetchObject=function(a,b){switch(a){case "#":case "int":return this.fetchInt(b);case "long":return this.fetchLong(b);case "int128":return this.fetchIntBytes(128,!1,b);case "int256":return this.fetchIntBytes(256,!1,b);case "int512":return this.fetchIntBytes(512,!1,b);case "string":return this.fetchString(b);case "bytes":return this.fetchBytes(b);case "double":return this.fetchDouble(b);case "Bool":return this.fetchBool(b);case "true":return!0}b=b||a||"Object";if("Vector"==
-a.substr(0,6)||"vector"==a.substr(0,6)){if("V"==a.charAt(0)){var c=this.readInt(b+"[id]"),d=uintToInt(c);if(812830625==d){var e=this.fetchBytes(b+"[packed_string]");e=gzipUncompress(e);e=bytesToArrayBuffer(e);e=new TLDeserialization(e);return e.fetchObject(a,b)}if(481674261!=d)throw Error("Invalid vector constructor "+c);}d=this.readInt(b+"[count]");c=[];if(0<d){var f=a.substr(7,a.length-7-(">"==a[a.length-1]?1:0));for(e=0;e<d;e++)c.push(this.fetchObject(f,b+"["+e+"]"))}return c}var g=window.Schema;
-f=!1;if("%"==a.charAt(0)){c=a.substr(1);for(e=0;e<g.constructors.length;e++)if(g.constructors[e].type==c){f=g.constructors[e];break}if(!f)throw Error("Constructor not found for type: "+a);}else if(97<=a.charAt(0)&&122>=a.charAt(0)){for(e=0;e<g.constructors.length;e++)if(g.constructors[e].predicate==a){f=g.constructors[e];break}if(!f)throw Error("Constructor not found for predicate: "+a);}else{c=this.readInt(b+"[id]");d=uintToInt(c);if(812830625==d)return e=this.fetchBytes(b+"[packed_string]"),e=gzipUncompress(e),
-e=bytesToArrayBuffer(e),e=new TLDeserialization(e),e.fetchObject(a,b);var h=g.constructorsIndex;if(!h)for(g.constructorsIndex=h={},e=0;e<g.constructors.length;e++)h[g.constructors[e].id]=e;e=h[d];"number"===typeof e&&(f=g.constructors[e]);h=!1;if(!f)for(g=window.Schema,e=0;e<g.constructors.length;e++)if(g.constructors[e].id==d){f=g.constructors[e];delete this.mtproto;h=!0;break}if(!f)throw Error("Constructor not found: "+c+" "+this.fetchInt()+" "+this.fetchInt());}g=f.predicate;c={_:g};e=(this.mtproto?
-"mt_":"")+g;if(this.override[e])this.override[e].apply(this,[c,b+"["+g+"]"]);else{var l;d=f.params.length;for(e=0;e<d;e++){var k=f.params[e];a=k.type;"#"==a&&void 0===c.pFlags&&(c.pFlags={});if(l=-1!==a.indexOf("?")){var m=a.split("?");var n=m[0].split(".");if(!(c[n[0]]&1<<n[1]))continue;a=m[1]}m=this.fetchObject(a,b+"["+g+"]["+k.name+"]");l&&"true"===a?c.pFlags[k.name]=m:c[k.name]=m}}h&&(this.mtproto=!0);return c};TLDeserialization.prototype.getOffset=function(){return this.offset};
-TLDeserialization.prototype.fetchEnd=function(){if(this.offset!=this.byteView.length)throw Error("Fetch end with non-empty buffer");return!0};function bigint(a){return bigInt(a.toString(16),16)}function bigStringInt(a){return bigInt(a,10)}function dHexDump(a){for(var b=[],c=0;c<a.length;c++)!c||c%2||(c%16?c%4?b.push(" "):b.push("  "):b.push("\n")),b.push((16>a[c]?"0":"")+a[c].toString(16));console.log(b.join(""))}
-function bytesToHex(a){a=a||[];for(var b=[],c=0;c<a.length;c++)b.push((16>a[c]?"0":"")+(a[c]||0).toString(16));return b.join("")}function bytesFromHex(a){var b=a.length;var c=0;var d=[];a.length%2&&(d.push(parseInt(a.charAt(0),16)),c++);for(;c<b;c+=2)d.push(parseInt(a.substr(c,2),16));return d}
-function bytesToBase64(a){for(var b,c="",d=a.length,e=0,f=0;f<d;f++)if(b=f%3,e|=a[f]<<(16>>>b&24),2===b||1===d-f)c+=String.fromCharCode(uint6ToBase64(e>>>18&63),uint6ToBase64(e>>>12&63),uint6ToBase64(e>>>6&63),uint6ToBase64(e&63)),e=0;return c.replace(/A(?=A$|$)/g,"=")}function uint6ToBase64(a){return 26>a?a+65:52>a?a+71:62>a?a-4:62===a?43:63===a?47:65}
-function base64ToBlob(a,b){for(var c=atob(a),d=c.length,e=Math.ceil(d/1024),f=Array(e),g=0;g<e;++g){for(var h=1024*g,l=Math.min(h+1024,d),k=Array(l-h),m=0;h<l;++m,++h)k[m]=c[h].charCodeAt(0);f[g]=new Uint8Array(k)}return blobConstruct(f,b)}function dataUrlToBlob(a){var b=a.split(",");a=b[1];b=b[0].split(":")[1].split(";")[0];return base64ToBlob(a,b)}
-function blobConstruct(a,b){var c=blobSafeMimeType(b);try{var d=new Blob(a,{type:c})}catch(f){var e=new BlobBuilder;angular.forEach(a,function(a){e.append(a)});d=e.getBlob(c)}return d}function blobSafeMimeType(a){return-1=="image/jpeg image/png image/gif image/webp image/bmp video/mp4 video/webm video/quicktime audio/ogg audio/mpeg audio/mp4".split(" ").indexOf(a)?"application/octet-stream":a}
-function bytesCmp(a,b){var c=a.length;if(c!=b.length)return!1;for(var d=0;d<c;d++)if(a[d]!=b[d])return!1;return!0}function bytesXor(a,b){for(var c=a.length,d=[],e=0;e<c;++e)d[e]=a[e]^b[e];return d}function bytesToWords(a){a instanceof ArrayBuffer&&(a=new Uint8Array(a));var b=a.length,c=[],d;for(d=0;d<b;d++)c[d>>>2]|=a[d]<<24-d%4*8;return new CryptoJS.lib.WordArray.init(c,b)}function bytesFromWords(a){var b=a.words;a=a.sigBytes;for(var c=[],d=0;d<a;d++)c.push(b[d>>>2]>>>24-d%4*8&255);return c}
-function bytesFromBigInt(a,b){var c=a.toByteArray();if(b&&c.length<b){for(var d=[],e=0,f=b-c.length;e<f;e++)d[e]=0;c=c instanceof ArrayBuffer?bufferConcat(d,c):d.concat(c)}else for(;!c[0]&&(!b||c.length>b);)c=c.slice(1);return c}function bytesFromLeemonBigInt(a,b){var c=bigInt2str(a,16);return bytesFromHex(c)}function bytesToArrayBuffer(a){return(new Uint8Array(a)).buffer}
-function convertToArrayBuffer(a){return a instanceof ArrayBuffer?a:void 0!==a.buffer&&a.buffer.byteLength==a.length*a.BYTES_PER_ELEMENT?a.buffer:bytesToArrayBuffer(a)}function convertToUint8Array(a){return void 0!==a.buffer?a:new Uint8Array(a)}function convertToByteArray(a){if(Array.isArray(a))return a;a=convertToUint8Array(a);for(var b=[],c=0,d=a.length;c<d;c++)b.push(a[c]);return b}
-function bytesFromArrayBuffer(a){var b=a.byteLength;a=new Uint8Array(a);for(var c=[],d=0;d<b;++d)c[d]=a[d];return c}function bufferConcat(a,b){var c=a.byteLength||a.length,d=new Uint8Array(c+(b.byteLength||b.length));d.set(a instanceof ArrayBuffer?new Uint8Array(a):a,0);d.set(b instanceof ArrayBuffer?new Uint8Array(b):b,c);return d.buffer}function longToInts(a){a=bigStringInt(a).divideAndRemainder(bigint(4294967296));return[a[0].intValue(),a[1].intValue()]}
-function longToBytes(a){return bytesFromWords({words:longToInts(a),sigBytes:8}).reverse()}function longFromInts(a,b){return bigint(a).shiftLeft(32).add(bigint(b)).toString(10)}function intToUint(a){a=parseInt(a);0>a&&(a+=4294967296);return a}function uintToInt(a){2147483647<a&&(a-=4294967296);return a}function sha1HashSync(a){this.rushaInstance=this.rushaInstance||new Rusha(1048576);return rushaInstance.rawDigest(a).buffer}function sha1BytesSync(a){return bytesFromArrayBuffer(sha1HashSync(a))}
-function sha256HashSync(a){a=CryptoJS.SHA256(bytesToWords(a));return bytesFromWords(a)}function addPadding(a,b,c){b=b||16;var d=b-(a.byteLength||a.length)%b;if(0<d&&d<b){b=Array(d);if(c)for(c=0;c<d;c++)b[c]=0;else(new SecureRandom).nextBytes(b);a=a instanceof ArrayBuffer?bufferConcat(a,b):a.concat(b)}return a}
-function aesEncryptSync(a,b,c){a=addPadding(a);a=CryptoJS.AES.encrypt(bytesToWords(a),bytesToWords(b),{iv:bytesToWords(c),padding:CryptoJS.pad.NoPadding,mode:CryptoJS.mode.IGE}).ciphertext;return bytesFromWords(a)}function aesDecryptSync(a,b,c){a=CryptoJS.AES.decrypt({ciphertext:bytesToWords(a)},bytesToWords(b),{iv:bytesToWords(c),padding:CryptoJS.pad.NoPadding,mode:CryptoJS.mode.IGE});return bytesFromWords(a)}function gzipUncompress(a){return(new Zlib.Gunzip(a)).decompress()}
-function nextRandomInt(a){return Math.floor(Math.random()*a)}function pqPrimeFactorization(a){a=new BigInteger(a);var b=!1;try{b=pqPrimeLeemon(str2bigInt(a.toString(16),16,Math.ceil(64/bpe)+1))}catch(c){console.error("Pq leemon Exception",c)}if(!1===b&&64>=a.bitLength())try{b=pqPrimeLong(goog.math.Long.fromString(a.toString(16),16))}catch(c){console.error("Pq long Exception",c)}!1===b&&(b=pqPrimeBigInteger(a));return b}
-function pqPrimeBigInteger(a){for(var b=0,c,d=0;3>d;d++){for(var e=(nextRandomInt(128)&15)+17,f=bigint(nextRandomInt(1E9)+1),g=f.clone(),h=1<<d+18,l=1;l<h;l++){++b;c=f.clone();f=f.clone();for(var k=bigint(e);!f.equals(BigInteger.ZERO);)f.and(BigInteger.ONE).equals(BigInteger.ZERO)||(k=k.add(c),0<k.compareTo(a)&&(k=k.subtract(a))),c=c.add(c),0<c.compareTo(a)&&(c=c.subtract(a)),f=f.shiftRight(1);f=k.clone();c=(0>f.compareTo(g)?g.subtract(f):f.subtract(g)).gcd(a);if(!c.equals(BigInteger.ONE))break;0==
-(l&l-1)&&(g=f.clone())}if(0<c.compareTo(BigInteger.ONE))break}d=a.divide(c);0<c.compareTo(d)?(a=d,d=c):a=c;return[bytesFromBigInt(a),bytesFromBigInt(d),b]}function gcdLong(a,b){for(;a.notEquals(goog.math.Long.ZERO)&&b.notEquals(goog.math.Long.ZERO);){for(;b.and(goog.math.Long.ONE).equals(goog.math.Long.ZERO);)b=b.shiftRight(1);for(;a.and(goog.math.Long.ONE).equals(goog.math.Long.ZERO);)a=a.shiftRight(1);0<a.compare(b)?a=a.subtract(b):b=b.subtract(a)}return b.equals(goog.math.Long.ZERO)?a:b}
-function pqPrimeLong(a){for(var b=0,c,d=0;3>d;d++){for(var e=goog.math.Long.fromInt((nextRandomInt(128)&15)+17),f=goog.math.Long.fromInt(nextRandomInt(1E9)+1),g=f,h=1<<d+18,l=1;l<h;l++){++b;c=f;for(var k=e;f.notEquals(goog.math.Long.ZERO);)f.and(goog.math.Long.ONE).notEquals(goog.math.Long.ZERO)&&(k=k.add(c),0<k.compare(a)&&(k=k.subtract(a))),c=c.add(c),0<c.compare(a)&&(c=c.subtract(a)),f=f.shiftRight(1);f=k;c=0>f.compare(g)?g.subtract(f):f.subtract(g);c=gcdLong(c,a);if(c.notEquals(goog.math.Long.ONE))break;
-0==(l&l-1)&&(g=f)}if(0<c.compare(goog.math.Long.ONE))break}d=a.div(c);0<c.compare(d)?(a=d,d=c):a=c;return[bytesFromHex(a.toString(16)),bytesFromHex(d.toString(16)),b]};
+/*!
+ * Webogram v0.7.0 - messaging web application for MTProto
+ * https://github.com/zhukov/webogram
+ * Copyright (C) 2014 Igor Zhukov <igor.beatle@gmail.com>
+ * https://github.com/zhukov/webogram/blob/master/LICENSE
+ */
+
+var TLSerialization = window.TLSerialization = function (options) {
+  options = options || {}
+  this.maxLength = options.startMaxLength || 2048 // 2Kb
+  this.offset = 0 // in bytes
+
+  this.createBuffer()
+
+  // this.debug = options.debug !== undefined ? options.debug : Config.Modes.debug
+  this.mtproto = options.mtproto || false
+  return this
+}
+
+TLSerialization.prototype.createBuffer = function () {
+  this.buffer = new ArrayBuffer(this.maxLength)
+  this.intView = new Int32Array(this.buffer)
+  this.byteView = new Uint8Array(this.buffer)
+}
+
+TLSerialization.prototype.getArray = function () {
+  var resultBuffer = new ArrayBuffer(this.offset)
+  var resultArray = new Int32Array(resultBuffer)
+
+  resultArray.set(this.intView.subarray(0, this.offset / 4))
+
+  return resultArray
+}
+
+TLSerialization.prototype.getBuffer = function () {
+  return this.getArray().buffer
+}
+
+TLSerialization.prototype.getBytes = function (typed) {
+  if (typed) {
+    var resultBuffer = new ArrayBuffer(this.offset)
+    var resultArray = new Uint8Array(resultBuffer)
+
+    resultArray.set(this.byteView.subarray(0, this.offset))
+
+    return resultArray
+  }
+
+  var bytes = []
+  for (var i = 0; i < this.offset; i++) {
+    bytes.push(this.byteView[i])
+  }
+  return bytes
+}
+
+TLSerialization.prototype.checkLength = function (needBytes) {
+  if (this.offset + needBytes < this.maxLength) {
+    return
+  }
+
+  console.trace('Increase buffer', this.offset, needBytes, this.maxLength)
+  this.maxLength = Math.ceil(Math.max(this.maxLength * 2, this.offset + needBytes + 16) / 4) * 4
+  var previousBuffer = this.buffer
+  var previousArray = new Int32Array(previousBuffer)
+
+  this.createBuffer()
+
+  new Int32Array(this.buffer).set(previousArray)
+}
+
+TLSerialization.prototype.writeInt = function (i, field) {
+  this.debug && console.log('>>>', i.toString(16), i, field)
+
+  this.checkLength(4)
+  this.intView[this.offset / 4] = i
+  this.offset += 4
+}
+
+TLSerialization.prototype.storeInt = function (i, field) {
+  this.writeInt(i, (field || '') + ':int')
+}
+
+TLSerialization.prototype.storeBool = function (i, field) {
+  if (i) {
+    this.writeInt(0x997275b5, (field || '') + ':bool')
+  } else {
+    this.writeInt(0xbc799737, (field || '') + ':bool')
+  }
+}
+
+TLSerialization.prototype.storeLongP = function (iHigh, iLow, field) {
+  this.writeInt(iLow, (field || '') + ':long[low]')
+  this.writeInt(iHigh, (field || '') + ':long[high]')
+}
+
+TLSerialization.prototype.storeLong = function (sLong, field) {
+	if (sLong instanceof ArrayBuffer) {
+		return this.storeIntBytes(sLong, 64, field);
+	}
+
+  if (Array.isArray(sLong)) {
+    if (sLong.length == 2) {
+      return this.storeLongP(sLong[0], sLong[1], field)
+    } else {
+      return this.storeIntBytes(sLong, 64, field)
+    }
+  }
+
+  if (typeof sLong != 'string') {
+    sLong = sLong ? sLong.toString() : '0'
+  }
+  var divRem = bigStringInt(sLong).divmod(bigint(0x100000000))
+
+  this.writeInt(intToUint(divRem.remainder.toJSNumber()), (field || '') + ':long[low]')
+  this.writeInt(intToUint(divRem.quotient.toJSNumber()), (field || '') + ':long[high]')
+}
+
+TLSerialization.prototype.storeDouble = function (f, field) {
+  var buffer = new ArrayBuffer(8)
+  var intView = new Int32Array(buffer)
+  var doubleView = new Float64Array(buffer)
+
+  doubleView[0] = f
+
+  this.writeInt(intView[0], (field || '') + ':double[low]')
+  this.writeInt(intView[1], (field || '') + ':double[high]')
+}
+
+TLSerialization.prototype.storeString = function (s, field) {
+  this.debug && console.log('>>>', s, (field || '') + ':string')
+
+  if (s === undefined) {
+    s = ''
+  }
+  var sUTF8 = unescape(encodeURIComponent(s))
+
+  this.checkLength(sUTF8.length + 8)
+
+  var len = sUTF8.length
+  if (len <= 253) {
+    this.byteView[this.offset++] = len
+  } else {
+    this.byteView[this.offset++] = 254
+    this.byteView[this.offset++] = len & 0xFF
+    this.byteView[this.offset++] = (len & 0xFF00) >> 8
+    this.byteView[this.offset++] = (len & 0xFF0000) >> 16
+  }
+  for (var i = 0; i < len; i++) {
+    this.byteView[this.offset++] = sUTF8.charCodeAt(i)
+  }
+
+  // Padding
+  while (this.offset % 4) {
+    this.byteView[this.offset++] = 0
+  }
+}
+
+TLSerialization.prototype.storeBytes = function (bytes, field) {
+  if (bytes instanceof ArrayBuffer) {
+    bytes = new Uint8Array(bytes)
+  }
+  else if (bytes === undefined) {
+    bytes = []
+  }
+  this.debug && console.log('>>>', bytesToHex(bytes), (field || '') + ':bytes')
+
+  var len = bytes.byteLength || bytes.length
+  this.checkLength(len + 8)
+  if (len <= 253) {
+    this.byteView[this.offset++] = len
+  } else {
+    this.byteView[this.offset++] = 254
+    this.byteView[this.offset++] = len & 0xFF
+    this.byteView[this.offset++] = (len & 0xFF00) >> 8
+    this.byteView[this.offset++] = (len & 0xFF0000) >> 16
+  }
+
+  this.byteView.set(bytes, this.offset)
+  this.offset += len
+
+  // Padding
+  while (this.offset % 4) {
+    this.byteView[this.offset++] = 0
+  }
+}
+
+TLSerialization.prototype.storeIntBytes = function (bytes, bits, field) {
+  if (bytes instanceof ArrayBuffer) {
+    bytes = new Uint8Array(bytes);
+  }
+  var len = bytes.length;
+  if ((bits % 32) || (len * 8) != bits) {
+    throw new Error('Invalid bits: ' + bits + ', ' + bytes.length + " (field: " + field + ")")
+  }
+
+  this.debug && console.log('>>>', bytesToHex(bytes), (field || '') + ':int' + bits)
+  this.checkLength(len)
+
+  this.byteView.set(bytes, this.offset)
+  this.offset += len
+}
+
+TLSerialization.prototype.storeRawBytes = function (bytes, field) {
+  if (bytes instanceof ArrayBuffer) {
+    bytes = new Uint8Array(bytes)
+  }
+  var len = bytes.length
+
+  this.debug && console.log('>>>', bytesToHex(bytes), (field || ''))
+  this.checkLength(len)
+
+  this.byteView.set(bytes, this.offset)
+  this.offset += len
+}
+
+TLSerialization.prototype.storeMethod = function (methodName, params) {
+  var schema = window.Schema;
+  var methodData = false,
+    i
+
+  for (i = 0; i < schema.methods.length; i++) {
+    if (schema.methods[i].method == methodName) {
+      methodData = schema.methods[i]
+      break
+    }
+  }
+  if (!methodData) {
+    throw new Error('No method ' + methodName + ' found')
+  }
+
+  this.storeInt(intToUint(methodData.id), methodName + '[id]')
+
+  var param, type
+  var i, condType
+  var fieldBit
+  var len = methodData.params.length
+  for (i = 0; i < len; i++) {
+    param = methodData.params[i]
+    type = param.type
+    if (type.indexOf('?') !== -1) {
+      condType = type.split('?')
+      fieldBit = condType[0].split('.')
+      if (!(params[fieldBit[0]] & (1 << fieldBit[1]))) {
+        continue
+      }
+      type = condType[1]
+    }
+    this.storeObject(params[param.name], type, methodName + '[' + param.name + ']')
+  }
+
+  return methodData.type
+}
+
+TLSerialization.prototype.storeObject = function (obj, type, field) {
+  switch (type) {
+    case '#':
+    case 'int':
+      return this.storeInt(obj, field)
+    case 'long':
+      return this.storeLong(obj, field)
+    case 'int128':
+      return this.storeIntBytes(obj, 128, field)
+    case 'int256':
+      return this.storeIntBytes(obj, 256, field)
+    case 'int512':
+      return this.storeIntBytes(obj, 512, field)
+    case 'string':
+      return this.storeString(obj, field)
+    case 'bytes':
+      return this.storeBytes(obj, field)
+    case 'double':
+      return this.storeDouble(obj, field)
+    case 'Bool':
+      return this.storeBool(obj, field)
+    case 'true':
+      return
+  }
+
+  if (Array.isArray(obj)) {
+    if (type.substr(0, 6) == 'Vector') {
+      this.writeInt(0x1cb5c415, field + '[id]')
+    }
+    else if (type.substr(0, 6) != 'vector') {
+      throw new Error('Invalid vector type ' + type)
+    }
+    var itemType;
+    itemType = type.substr(7, type.length - 8 + (type[type.length-1]!='>'?1:0)); // for "Vector<itemType>"
+    this.writeInt(obj.length, field + '[count]')
+    for (var i = 0; i < obj.length; i++) {
+      this.storeObject(obj[i], itemType, field + '[' + i + ']')
+    }
+    return true
+  }
+  else if (type.substr(0, 6).toLowerCase() == 'vector') {
+    throw new Error('Invalid vector object')
+  }
+
+  if (typeof obj != 'object' || obj == null || Array.isArray(obj)) {
+    throw new Error('Invalid object for type ' + type)
+  }
+
+  var schema = window.Schema;
+  var predicate = obj['_']
+  var isBare = false
+  var constructorData = false, i;
+
+  if (isBare = (type.charAt(0) == '%')) {
+    type = type.substr(1)
+  }
+
+  for (i = 0; i < schema.constructors.length; i++) {
+    if (schema.constructors[i].predicate == predicate) {
+      constructorData = schema.constructors[i]
+      break
+    }
+  }
+  if (!constructorData) {
+    throw new Error('No predicate ' + predicate + ' found')
+  }
+
+  if (predicate == type) {
+    isBare = true
+  }
+
+  if (!isBare) {
+    this.writeInt(intToUint(constructorData.id), field + '[' + predicate + '][id]')
+  }
+
+  var param, type
+  var i, condType
+  var fieldBit
+  var len = constructorData.params.length
+  for (i = 0; i < len; i++) {
+    param = constructorData.params[i]
+    type = param.type
+    if (type.indexOf('?') !== -1) {
+      condType = type.split('?')
+      fieldBit = condType[0].split('.')
+      if (!(obj[fieldBit[0]] & (1 << fieldBit[1]))) {
+        continue
+      }
+      type = condType[1]
+    }
+
+    this.storeObject(obj[param.name], type, field + '[' + predicate + '][' + param.name + ']')
+  }
+
+  return constructorData.type
+}
+
+var TLDeserialization = window.TLDeserialization = function (buffer, options) {
+  options = options || {}
+
+  this.offset = 0 // in bytes
+  this.override = options.override || {}
+
+  this.buffer = buffer
+  this.intView = new Uint32Array(this.buffer)
+  this.byteView = new Uint8Array(this.buffer)
+
+  // this.debug = options.debug !== undefined ? options.debug : Config.Modes.debug
+  this.mtproto = options.mtproto || false
+  return this
+}
+
+TLDeserialization.prototype.readInt = function (field) {
+  if (this.offset >= this.intView.length * 4) {
+    throw new Error('Nothing to fetch: ' + field)
+  }
+
+  var i = this.intView[this.offset / 4]
+
+  this.debug && console.log('<<<', i.toString(16), i, field)
+
+  this.offset += 4
+
+  return i
+}
+
+TLDeserialization.prototype.fetchInt = function (field) {
+  return this.readInt((field || '') + ':int')
+}
+
+TLDeserialization.prototype.fetchDouble = function (field) {
+  var buffer = new ArrayBuffer(8)
+  var intView = new Int32Array(buffer)
+  var doubleView = new Float64Array(buffer)
+
+  intView[0] = this.readInt((field || '') + ':double[low]'),
+  intView[1] = this.readInt((field || '') + ':double[high]')
+
+  return doubleView[0]
+}
+
+TLDeserialization.prototype.fetchLong = function (field) {
+  var iLow = this.readInt((field || '') + ':long[low]')
+  var iHigh = this.readInt((field || '') + ':long[high]')
+
+  // var longDec = bigint(iHigh).shiftLeft(32).add(bigint(iLow)).toString()
+
+  return new Int32Array([iLow, iHigh]).buffer;
+}
+
+TLDeserialization.prototype.fetchBool = function (field) {
+  var i = this.readInt((field || '') + ':bool')
+  if (i == 0x997275b5) {
+    return true
+  } else if (i == 0xbc799737) {
+    return false
+  }
+
+  this.offset -= 4
+  return this.fetchObject('Object', field)
+}
+
+TLDeserialization.prototype.fetchString = function (field) {
+  var len = this.byteView[this.offset++]
+
+  if (len == 254) {
+    var len = this.byteView[this.offset++] |
+      (this.byteView[this.offset++] << 8) |
+      (this.byteView[this.offset++] << 16)
+  }
+
+  var sUTF8 = ''
+  for (var i = 0; i < len; i++) {
+    sUTF8 += String.fromCharCode(this.byteView[this.offset++])
+  }
+
+  // Padding
+  while (this.offset % 4) {
+    this.offset++
+  }
+
+  try {
+    var s = decodeURIComponent(escape(sUTF8))
+  } catch (e) {
+    var s = sUTF8
+  }
+
+  this.debug && console.log('<<<', s, (field || '') + ':string')
+
+  return s
+}
+
+TLDeserialization.prototype.fetchBytes = function (field) {
+  var len = this.byteView[this.offset++]
+
+  if (len == 254) {
+    len = this.byteView[this.offset++] |
+      (this.byteView[this.offset++] << 8) |
+      (this.byteView[this.offset++] << 16)
+  }
+
+  var bytes = this.byteView.subarray(this.offset, this.offset + len)
+  this.offset += len
+
+  // Padding
+  while (this.offset % 4) {
+    this.offset++
+  }
+
+  this.debug && console.log('<<<', bytesToHex(bytes), (field || '') + ':bytes')
+
+  return bytes
+}
+
+TLDeserialization.prototype.fetchIntBytes = function (bits, typed, field) {
+  if (bits % 32) {
+    throw new Error('Invalid bits: ' + bits)
+  }
+
+  var len = bits / 8
+  if (typed) {
+    var result = this.byteView.subarray(this.offset, this.offset + len)
+    this.offset += len
+    return result
+  }
+
+  var bytes = []
+  for (var i = 0; i < len; i++) {
+    bytes.push(this.byteView[this.offset++])
+  }
+
+  this.debug && console.log('<<<', bytesToHex(bytes), (field || '') + ':int' + bits)
+
+  return new Uint8Array(bytes).buffer;
+}
+
+TLDeserialization.prototype.fetchRawBytes = function (len, typed, field) {
+  if (len === false) {
+    len = this.readInt((field || '') + '_length')
+    if (len > this.byteView.byteLength) {
+      throw new Error('Invalid raw bytes length: ' + len + ', buffer len: ' + this.byteView.byteLength)
+    }
+  }
+
+  if (typed) {
+    var bytes = new Uint8Array(len)
+    bytes.set(this.byteView.subarray(this.offset, this.offset + len))
+    this.offset += len
+    return bytes
+  }
+
+  var bytes = []
+  for (var i = 0; i < len; i++) {
+    bytes.push(this.byteView[this.offset++])
+  }
+
+  this.debug && console.log('<<<', bytesToHex(bytes), (field || ''))
+
+  return bytes
+}
+
+TLDeserialization.prototype.fetchObject = function (type, field) {
+  // console.log('fetchObject('+arr(arguments).map(JSON.stringify).join(', ')+")");
+  switch (type) {
+    case '#':
+    case 'int':
+      return this.fetchInt(field)
+    case 'long':
+      return this.fetchLong(field)
+    case 'int128':
+      return this.fetchIntBytes(128, false, field)
+    case 'int256':
+      return this.fetchIntBytes(256, false, field)
+    case 'int512':
+      return this.fetchIntBytes(512, false, field)
+    case 'string':
+      return this.fetchString(field)
+    case 'bytes':
+      return this.fetchBytes(field)
+    case 'double':
+      return this.fetchDouble(field)
+    case 'Bool':
+      return this.fetchBool(field)
+    case 'true':
+      return true
+  }
+
+  field = field || type || 'Object'
+
+  if (type.substr(0, 6) == 'Vector' || type.substr(0, 6) == 'vector') {
+    if (type.charAt(0) == 'V') {
+      var constructor = this.readInt(field + '[id]')
+      var constructorCmp = uintToInt(constructor)
+
+      if (constructorCmp == 0x3072cfa1) { // Gzip packed
+        var compressed = this.fetchBytes(field + '[packed_string]')
+        var uncompressed = gzipUncompress(compressed)
+        var buffer = bytesToArrayBuffer(uncompressed)
+        var newDeserializer = (new TLDeserialization(buffer))
+
+        return newDeserializer.fetchObject(type, field)
+      }
+      if (constructorCmp != 0x1cb5c415) {
+        throw new Error('Invalid vector constructor ' + constructor)
+      }
+    }
+    var len = this.readInt(field + '[count]')
+    var result = []
+    if (len > 0) {
+      var itemType = type.substr(7, type.length - 7 - (type[type.length-1]=='>'?1:0)); // for "Vector<itemType>"
+      for (var i = 0; i < len; i++) {
+        result.push(this.fetchObject(itemType, field + '[' + i + ']'))
+      }
+    }
+
+    return result
+  }
+
+  var schema = window.Schema;
+  var predicate = false;
+  var constructorData = false
+
+  if (type.charAt(0) == '%') {
+    var checkType = type.substr(1)
+    for (var i = 0; i < schema.constructors.length; i++) {
+      if (schema.constructors[i].type == checkType) {
+        constructorData = schema.constructors[i]
+        break
+      }
+    }
+    if (!constructorData) {
+      throw new Error('Constructor not found for type: ' + type)
+    }
+  }
+  else if (type.charAt(0) >= 97 && type.charAt(0) <= 122) {
+    for (var i = 0; i < schema.constructors.length; i++) {
+      if (schema.constructors[i].predicate == type) {
+        constructorData = schema.constructors[i]
+        break
+      }
+    }
+    if (!constructorData) {
+      throw new Error('Constructor not found for predicate: ' + type)
+    }
+  }else {
+    var constructor = this.readInt(field + '[id]')
+    var constructorCmp = uintToInt(constructor);
+
+    if (constructorCmp == 0x3072cfa1) { // Gzip packed
+      var compressed = this.fetchBytes(field + '[packed_string]')
+      var uncompressed = gzipUncompress(compressed)
+      var buffer = bytesToArrayBuffer(uncompressed)
+      var newDeserializer = (new TLDeserialization(buffer))
+
+      return newDeserializer.fetchObject(type, field)
+    }
+
+    var index = schema.constructorsIndex
+    if (!index) {
+      schema.constructorsIndex = index = {}
+      for (var i = 0; i < schema.constructors.length; i++) {
+        index[schema.constructors[i].id] = i
+      }
+    }
+    var i = index[constructorCmp];
+    if (typeof i === 'number') {
+      constructorData = schema.constructors[i];
+    }
+
+    var fallback = false
+    if (!constructorData) {
+      var schemaFallback = window.Schema;
+      for (i = 0; i < schemaFallback.constructors.length; i++) {
+        if (schemaFallback.constructors[i].id == constructorCmp) {
+          constructorData = schemaFallback.constructors[i]
+
+          delete this.mtproto
+          fallback = true
+          break
+        }
+      }
+    }
+    if (!constructorData) {
+      throw new Error('Constructor not found: ' + constructor + ' ' + this.fetchInt() + ' ' + this.fetchInt())
+      // console.error('Constructor not found: ' + constructor + ' ' + this.fetchInt() + ' ' + this.fetchInt());
+      // return {_: null};
+    }
+  }
+
+  predicate = constructorData.predicate
+
+  var result = {_: predicate};
+  var overrideKey = (this.mtproto ? 'mt_' : '') + predicate
+  var self = this
+
+  if (this.override[overrideKey]) {
+    this.override[overrideKey].apply(this, [result, field + '[' + predicate + ']'])
+  } else {
+    var i, param
+    var type, isCond
+    var condType, fieldBit
+    var value
+    var len = constructorData.params.length
+    for (i = 0; i < len; i++) {
+      param = constructorData.params[i]
+      type = param.type
+      if (type == '#' && result.pFlags === undefined) {
+        result.pFlags = {}
+      }
+      if (isCond = (type.indexOf('?') !== -1)) {
+        condType = type.split('?')
+        fieldBit = condType[0].split('.')
+        if (!(result[fieldBit[0]] & (1 << fieldBit[1]))) {
+          continue
+        }
+        type = condType[1]
+      }
+
+      value = self.fetchObject(type, field + '[' + predicate + '][' + param.name + ']')
+
+      if (isCond && type === 'true') {
+        result.pFlags[param.name] = value
+      } else {
+        result[param.name] = value
+      }
+    }
+  }
+
+  if (fallback) {
+    this.mtproto = true
+  }
+
+  return result
+}
+
+TLDeserialization.prototype.getOffset = function () {
+  return this.offset
+}
+
+TLDeserialization.prototype.fetchEnd = function () {
+  if (this.offset != this.byteView.length) {
+    throw new Error('Fetch end with non-empty buffer')
+  }
+  return true
+}
+
+
+function bigint (num) {
+  return bigInt(num.toString(16), 16)
+}
+
+function bigStringInt (strNum) {
+  return bigInt(strNum, 10)
+}
+
+function dHexDump (bytes) {
+  var arr = []
+  for (var i = 0; i < bytes.length; i++) {
+    if (i && !(i % 2)) {
+      if (!(i % 16)) {
+        arr.push('\n')
+      } else if (!(i % 4)) {
+        arr.push('  ')
+      } else {
+        arr.push(' ')
+      }
+    }
+    arr.push((bytes[i] < 16 ? '0' : '') + bytes[i].toString(16))
+  }
+
+  console.log(arr.join(''))
+}
+
+function bytesToHex (bytes) {
+  bytes = bytes || []
+  var arr = []
+  for (var i = 0; i < bytes.length; i++) {
+    arr.push((bytes[i] < 16 ? '0' : '') + (bytes[i] || 0).toString(16))
+  }
+  return arr.join('')
+}
+
+function bytesFromHex (hexString) {
+  var len = hexString.length,
+    i
+  var start = 0
+  var bytes = []
+
+  if (hexString.length % 2) {
+    bytes.push(parseInt(hexString.charAt(0), 16))
+    start++
+  }
+
+  for (i = start; i < len; i += 2) {
+    bytes.push(parseInt(hexString.substr(i, 2), 16))
+  }
+
+  return bytes
+}
+
+function bytesToBase64 (bytes) {
+  var mod3
+  var result = ''
+
+  for (var nLen = bytes.length, nUint24 = 0, nIdx = 0; nIdx < nLen; nIdx++) {
+    mod3 = nIdx % 3
+    nUint24 |= bytes[nIdx] << (16 >>> mod3 & 24)
+    if (mod3 === 2 || nLen - nIdx === 1) {
+      result += String.fromCharCode(
+        uint6ToBase64(nUint24 >>> 18 & 63),
+        uint6ToBase64(nUint24 >>> 12 & 63),
+        uint6ToBase64(nUint24 >>> 6 & 63),
+        uint6ToBase64(nUint24 & 63)
+      )
+      nUint24 = 0
+    }
+  }
+
+  return result.replace(/A(?=A$|$)/g, '=')
+}
+
+function uint6ToBase64 (nUint6) {
+  return nUint6 < 26
+    ? nUint6 + 65
+    : nUint6 < 52
+      ? nUint6 + 71
+      : nUint6 < 62
+        ? nUint6 - 4
+        : nUint6 === 62
+          ? 43
+          : nUint6 === 63
+            ? 47
+            : 65
+}
+
+function base64ToBlob (base64str, mimeType) {
+  var sliceSize = 1024
+  var byteCharacters = atob(base64str)
+  var bytesLength = byteCharacters.length
+  var slicesCount = Math.ceil(bytesLength / sliceSize)
+  var byteArrays = new Array(slicesCount)
+
+  for (var sliceIndex = 0; sliceIndex < slicesCount; ++sliceIndex) {
+    var begin = sliceIndex * sliceSize
+    var end = Math.min(begin + sliceSize, bytesLength)
+
+    var bytes = new Array(end - begin)
+    for (var offset = begin, i = 0; offset < end; ++i, ++offset) {
+      bytes[i] = byteCharacters[offset].charCodeAt(0)
+    }
+    byteArrays[sliceIndex] = new Uint8Array(bytes)
+  }
+
+  return blobConstruct(byteArrays, mimeType)
+}
+
+function dataUrlToBlob (url) {
+  // var name = 'b64blob ' + url.length
+  // console.time(name)
+  var urlParts = url.split(',')
+  var base64str = urlParts[1]
+  var mimeType = urlParts[0].split(':')[1].split(';')[0]
+  var blob = base64ToBlob(base64str, mimeType)
+  // console.timeEnd(name)
+  return blob
+}
+
+function blobConstruct (blobParts, mimeType) {
+  var blob
+  var safeMimeType = blobSafeMimeType(mimeType)
+  try {
+    blob = new Blob(blobParts, {type: safeMimeType})
+  } catch (e) {
+    var bb = new BlobBuilder
+    angular.forEach(blobParts, function (blobPart) {
+      bb.append(blobPart)
+    })
+    blob = bb.getBlob(safeMimeType)
+  }
+  return blob
+}
+
+function blobSafeMimeType(mimeType) {
+  if ([
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/bmp',
+    'video/mp4',
+    'video/webm',
+    'video/quicktime',
+    'audio/ogg',
+    'audio/mpeg',
+    'audio/mp4',
+  ].indexOf(mimeType) == -1) {
+    return 'application/octet-stream'
+  }
+  return mimeType
+}
+
+function bytesCmp (bytes1, bytes2) {
+  var len = bytes1.length
+  if (len != bytes2.length) {
+    return false
+  }
+
+  for (var i = 0; i < len; i++) {
+    if (bytes1[i] != bytes2[i]) {
+      return false
+    }
+  }
+  return true
+}
+
+function bytesXor (bytes1, bytes2) {
+  var len = bytes1.length
+  var bytes = []
+
+  for (var i = 0; i < len; ++i) {
+    bytes[i] = bytes1[i] ^ bytes2[i]
+  }
+
+  return bytes
+}
+
+function bytesToWords (bytes) {
+  if (bytes instanceof ArrayBuffer) {
+    bytes = new Uint8Array(bytes)
+  }
+  var len = bytes.length
+  var words = []
+  var i
+  for (i = 0; i < len; i++) {
+    words[i >>> 2] |= bytes[i] << (24 - (i % 4) * 8)
+  }
+
+  return new CryptoJS.lib.WordArray.init(words, len)
+}
+
+function bytesFromWords (wordArray) {
+  var words = wordArray.words
+  var sigBytes = wordArray.sigBytes
+  var bytes = []
+
+  for (var i = 0; i < sigBytes; i++) {
+    bytes.push((words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff)
+  }
+
+  return bytes
+}
+
+function bytesFromBigInt (bigInt, len) {
+  var bytes = bigInt.toByteArray()
+
+  if (len && bytes.length < len) {
+    var padding = []
+    for (var i = 0, needPadding = len - bytes.length; i < needPadding; i++) {
+      padding[i] = 0
+    }
+    if (bytes instanceof ArrayBuffer) {
+      bytes = bufferConcat(padding, bytes)
+    } else {
+      bytes = padding.concat(bytes)
+    }
+  }else {
+    while (!bytes[0] && (!len || bytes.length > len)) {
+      bytes = bytes.slice(1)
+    }
+  }
+
+  return bytes
+}
+
+function bytesFromLeemonBigInt (bigInt, len) {
+  var str = bigInt2str(bigInt, 16)
+  return bytesFromHex(str)
+}
+
+function bytesToArrayBuffer (b) {
+  return (new Uint8Array(b)).buffer
+}
+
+function convertToArrayBuffer (bytes) {
+  // Be careful with converting subarrays!!
+  if (bytes instanceof ArrayBuffer) {
+    return bytes
+  }
+  if (bytes.buffer !== undefined &&
+    bytes.buffer.byteLength == bytes.length * bytes.BYTES_PER_ELEMENT) {
+    return bytes.buffer
+  }
+  return bytesToArrayBuffer(bytes)
+}
+
+function convertToUint8Array (bytes) {
+  if (bytes.buffer !== undefined) {
+    return bytes
+  }
+  return new Uint8Array(bytes)
+}
+
+function convertToByteArray (bytes) {
+  if (Array.isArray(bytes)) {
+    return bytes
+  }
+  bytes = convertToUint8Array(bytes)
+  var newBytes = []
+  for (var i = 0, len = bytes.length; i < len; i++) {
+    newBytes.push(bytes[i])
+  }
+  return newBytes
+}
+
+function bytesFromArrayBuffer (buffer) {
+  var len = buffer.byteLength
+  var byteView = new Uint8Array(buffer)
+  var bytes = []
+
+  for (var i = 0; i < len; ++i) {
+    bytes[i] = byteView[i]
+  }
+
+  return bytes
+}
+
+function bufferConcat (buffer1, buffer2) {
+  var l1 = buffer1.byteLength || buffer1.length
+  var l2 = buffer2.byteLength || buffer2.length
+  var tmp = new Uint8Array(l1 + l2)
+  tmp.set(buffer1 instanceof ArrayBuffer ? new Uint8Array(buffer1) : buffer1, 0)
+  tmp.set(buffer2 instanceof ArrayBuffer ? new Uint8Array(buffer2) : buffer2, l1)
+
+  return tmp.buffer
+}
+
+function longToInts (sLong) {
+  var divRem = bigStringInt(sLong).divideAndRemainder(bigint(0x100000000))
+
+  return [divRem[0].intValue(), divRem[1].intValue()]
+}
+
+function longToBytes (sLong) {
+  return bytesFromWords({words: longToInts(sLong), sigBytes: 8}).reverse()
+}
+
+function longFromInts (high, low) {
+  return bigint(high).shiftLeft(32).add(bigint(low)).toString(10)
+}
+
+function intToUint (val) {
+  val = parseInt(val)
+  if (val < 0) {
+    val = val + 4294967296
+  }
+  return val
+}
+
+function uintToInt (val) {
+  if (val > 2147483647) {
+    val = val - 4294967296
+  }
+  return val
+}
+
+function sha1HashSync (bytes) {
+  this.rushaInstance = this.rushaInstance || new Rusha(1024 * 1024)
+
+  // console.log(dT(), 'SHA-1 hash start', bytes.byteLength || bytes.length)
+  var hashBytes = rushaInstance.rawDigest(bytes).buffer
+  // console.log(dT(), 'SHA-1 hash finish')
+
+  return hashBytes
+}
+
+function sha1BytesSync (bytes) {
+  return bytesFromArrayBuffer(sha1HashSync(bytes))
+}
+
+function sha256HashSync (bytes) {
+  // console.log(dT(), 'SHA-2 hash start', bytes.byteLength || bytes.length)
+  var hashWords = CryptoJS.SHA256(bytesToWords(bytes))
+  // console.log(dT(), 'SHA-2 hash finish')
+
+  var hashBytes = bytesFromWords(hashWords)
+
+  return hashBytes
+}
+
+function addPadding (bytes, blockSize, zeroes) {
+  blockSize = blockSize || 16
+  var len = bytes.byteLength || bytes.length
+  var needPadding = blockSize - (len % blockSize)
+  if (needPadding > 0 && needPadding < blockSize) {
+    var padding = new Array(needPadding)
+    if (zeroes) {
+      for (var i = 0; i < needPadding; i++) {
+        padding[i] = 0
+      }
+    } else {
+      (new SecureRandom()).nextBytes(padding)
+    }
+
+    if (bytes instanceof ArrayBuffer) {
+      bytes = bufferConcat(bytes, padding)
+    } else {
+      bytes = bytes.concat(padding)
+    }
+  }
+
+  return bytes
+}
+
+function aesEncryptSync (bytes, keyBytes, ivBytes) {
+  var len = bytes.byteLength || bytes.length
+
+  // console.log(dT(), 'AES encrypt start', len/*, bytesToHex(keyBytes), bytesToHex(ivBytes)*/)
+  bytes = addPadding(bytes)
+
+  var encryptedWords = CryptoJS.AES.encrypt(bytesToWords(bytes), bytesToWords(keyBytes), {
+    iv: bytesToWords(ivBytes),
+    padding: CryptoJS.pad.NoPadding,
+    mode: CryptoJS.mode.IGE
+  }).ciphertext
+
+  var encryptedBytes = bytesFromWords(encryptedWords)
+  // console.log(dT(), 'AES encrypt finish')
+
+  return encryptedBytes
+}
+
+function aesDecryptSync (encryptedBytes, keyBytes, ivBytes) {
+
+  // console.log(dT(), 'AES decrypt start', encryptedBytes.length)
+  var decryptedWords = CryptoJS.AES.decrypt({ciphertext: bytesToWords(encryptedBytes)}, bytesToWords(keyBytes), {
+    iv: bytesToWords(ivBytes),
+    padding: CryptoJS.pad.NoPadding,
+    mode: CryptoJS.mode.IGE
+  })
+
+  var bytes = bytesFromWords(decryptedWords)
+  // console.log(dT(), 'AES decrypt finish')
+
+  return bytes
+}
+
+function gzipUncompress (bytes) {
+  // console.log('Gzip uncompress start')
+  var result = (new Zlib.Gunzip(bytes)).decompress()
+  // console.log('Gzip uncompress finish')
+  return result
+}
+
+function nextRandomInt (maxValue) {
+  return Math.floor(Math.random() * maxValue)
+}
+
+function pqPrimeFactorization (pqBytes) {
+  var what = new BigInteger(pqBytes)
+  var result = false
+
+  // console.log(dT(), 'PQ start', pqBytes, what.toString(16), what.bitLength())
+
+  try {
+    result = pqPrimeLeemon(str2bigInt(what.toString(16), 16, Math.ceil(64 / bpe) + 1))
+  } catch (e) {
+    console.error('Pq leemon Exception', e)
+  }
+
+  if (result === false && what.bitLength() <= 64) {
+    // console.time('PQ long')
+    try {
+      result = pqPrimeLong(goog.math.Long.fromString(what.toString(16), 16))
+    } catch (e) {
+      console.error('Pq long Exception', e)
+    }
+  // console.timeEnd('PQ long')
+  }
+  // console.log(result)
+
+  if (result === false) {
+    // console.time('pq BigInt')
+    result = pqPrimeBigInteger(what)
+  // console.timeEnd('pq BigInt')
+  }
+
+  // console.log(dT(), 'PQ finish')
+
+  return result
+}
+
+function pqPrimeBigInteger (what) {
+  var it = 0,
+    g
+  for (var i = 0; i < 3; i++) {
+    var q = (nextRandomInt(128) & 15) + 17
+    var x = bigint(nextRandomInt(1000000000) + 1)
+    var y = x.clone()
+    var lim = 1 << (i + 18)
+
+    for (var j = 1; j < lim; j++) {
+      ++it
+      var a = x.clone()
+      var b = x.clone()
+      var c = bigint(q)
+
+      while (!b.equals(BigInteger.ZERO)) {
+        if (!b.and(BigInteger.ONE).equals(BigInteger.ZERO)) {
+          c = c.add(a)
+          if (c.compareTo(what) > 0) {
+            c = c.subtract(what)
+          }
+        }
+        a = a.add(a)
+        if (a.compareTo(what) > 0) {
+          a = a.subtract(what)
+        }
+        b = b.shiftRight(1)
+      }
+
+      x = c.clone()
+      var z = x.compareTo(y) < 0 ? y.subtract(x) : x.subtract(y)
+      g = z.gcd(what)
+      if (!g.equals(BigInteger.ONE)) {
+        break
+      }
+      if ((j & (j - 1)) == 0) {
+        y = x.clone()
+      }
+    }
+    if (g.compareTo(BigInteger.ONE) > 0) {
+      break
+    }
+  }
+
+  var f = what.divide(g), P, Q
+
+  if (g.compareTo(f) > 0) {
+    P = f
+    Q = g
+  } else {
+    P = g
+    Q = f
+  }
+
+  return [bytesFromBigInt(P), bytesFromBigInt(Q), it]
+}
+
+function gcdLong (a, b) {
+  while (a.notEquals(goog.math.Long.ZERO) && b.notEquals(goog.math.Long.ZERO)) {
+    while (b.and(goog.math.Long.ONE).equals(goog.math.Long.ZERO)) {
+      b = b.shiftRight(1)
+    }
+    while (a.and(goog.math.Long.ONE).equals(goog.math.Long.ZERO)) {
+      a = a.shiftRight(1)
+    }
+    if (a.compare(b) > 0) {
+      a = a.subtract(b)
+    } else {
+      b = b.subtract(a)
+    }
+  }
+  return b.equals(goog.math.Long.ZERO) ? a : b
+}
+
+function pqPrimeLong (what) {
+  var it = 0,
+    g
+  for (var i = 0; i < 3; i++) {
+    var q = goog.math.Long.fromInt((nextRandomInt(128) & 15) + 17)
+    var x = goog.math.Long.fromInt(nextRandomInt(1000000000) + 1)
+    var y = x
+    var lim = 1 << (i + 18)
+
+    for (var j = 1; j < lim; j++) {
+      ++it
+      var a = x
+      var b = x
+      var c = q
+
+      while (b.notEquals(goog.math.Long.ZERO)) {
+        if (b.and(goog.math.Long.ONE).notEquals(goog.math.Long.ZERO)) {
+          c = c.add(a)
+          if (c.compare(what) > 0) {
+            c = c.subtract(what)
+          }
+        }
+        a = a.add(a)
+        if (a.compare(what) > 0) {
+          a = a.subtract(what)
+        }
+        b = b.shiftRight(1)
+      }
+
+      x = c
+      var z = x.compare(y) < 0 ? y.subtract(x) : x.subtract(y)
+      g = gcdLong(z, what)
+      if (g.notEquals(goog.math.Long.ONE)) {
+        break
+      }
+      if ((j & (j - 1)) == 0) {
+        y = x
+      }
+    }
+    if (g.compare(goog.math.Long.ONE) > 0) {
+      break
+    }
+  }
+
+  var f = what.div(g), P, Q
+
+  if (g.compare(f) > 0) {
+    P = f
+    Q = g
+  } else {
+    P = g
+    Q = f
+  }
+
+  return [bytesFromHex(P.toString(16)), bytesFromHex(Q.toString(16)), it]
+}

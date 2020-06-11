@@ -1,26 +1,761 @@
-var ids={u:"user_id",C:"channel_id",c:"chat_id"},peerType={peerUser:"u",peerChannel:"C",peerChat:"c"},peerName={u:"peerUser",C:"peerChannel",c:"peerChat"},inputPeerName={u:"inputPeerUser",C:"inputPeerChannel",c:"inputPeerChat"};function peerID(a){return peerType[a._]+a[ids[peerType[a._]]]}
-var ext={},ExternalMTProto=MTProto.extend({constructor:function(a){var b=this;this.id=S(a.photo_id);this._super(a);this.before=function(a){function c(c){b.sendAPIMethod("auth.importAuthorization",{id:c.id,bytes:c.bytes},function(c,e){c&&"auth.authorization"==e._?a():b.warn("failed to import authorization",e)},!0)}proto.sendAPIMethod("auth.exportAuthorization",{dc_id:b.DC},function(a,d){a&&"auth.exportedAuthorization"==d._?c(d):b.warn("failed to export authorization",d)})};this.connect()}}),ProfilePhoto=
-Class.extend({constructor:function(a,b,c){this.conn=proto;this.dc_id=a.dc_id||2;this.size=this.filename=null;this.isAnimatedSticker=this.isSticker=!1;this.onUpdate=c;this.inputPeer=b;this.src=this.blob=null;0<=a._.toLowerCase().indexOf("empty")||(this.volume_id=a.photo_small.volume_id,this.local_id=a.photo_small.local_id,this.load())},load:function(){var a=this;loadDeprecatedLocation(this.dc_id,{_:"inputPeerPhotoFileLocation",peer:this.inputPeer,local_id:this.local_id,volume_id:this.volume_id},function(b,
-c){a.blob=b;a.src=c;if("function"===typeof a.onUpdate)a.onUpdate()})}});function title(a){return a&&"user"==a._?a.first_name+(a.last_name?" "+a.last_name:""):a?a.title:""}
-var Media=Class.extend({constructor:function(a,b,c){this.onUpdate=null;this.type=a._.slice(12).toLowerCase();this.raw=a;this.message=b;this.peer=c;this.ready=!0;"empty"!=this.type&&"photo"==this.type&&(this.photoRaw=a.photo,"photoEmpty"!=this.photoRaw._&&(this.photo=this.photoRaw,this.photo.src=null,this.photo.previewSrc=null,this.ready=!1,this.loadPreviewPhoto()))},loadPreviewPhoto:function(){for(var a=this.photo.sizes,b=map(a,function(a){return a.type}),c=null,d=0;9>d;++d)if(0<=b.indexOf("xmyswabcd"[d])){c=
-a[b.indexOf("xmyswabcd"[d])];break}if(null==c)console.warn("size for preview not found");else if(this.previewSize=c,c.location){var e=this;loadDeprecatedLocation(this.photo.dc_id,{_:"inputPhotoFileLocation",access_hash:this.photo.access_hash,file_reference:this.photo.file_reference,thumb_size:c.type,id:this.photo.id},function(a,b){e.previewSrc=b;e.previewBlob=a;if("function"===typeof e.onUpdate)e.onUpdate()})}else console.warn("location in size object is missing")},loadPhoto:function(){}});
-function loadDeprecatedLocation(a,b,c){if(a==proto.DC)var d=proto;else proto.DC==a||ext[a]?a!=proto.DC&&ext[a]&&(d=ext[a]):(ext[a]=new ExternalMTProto({debug:!0,DC:a}),d=ext[a]);d.sendAPIMethod("upload.getFile",{location:b,offset:0,limit:1048576},function(a,b){if(a){if("upload.file"==b._){var d=new Blob([b.bytes]),e=URL.createObjectURL(d);c(d,e)}}else console.warn("upload.getFile: bad response")})}
-var chats={},users={},User=Class.extend({constructor:function(a,b){this.peers=b?[b]:[];this.id=a.id;this.access_hash=a.access_hash;a.pFlags.deleted?(this.title="Deleted Account",this["short"]=":(",this.photo=null):(this.title=title(a),this["short"]=a.last_name?(a.first_name[0]+a.last_name[0]).toUpperCase():a.first_name[0].toUpperCase(),this.phone=a.phone||!1,this.photo=a.photo&&"chatPhotoEmpty"!=a.photo._?new ProfilePhoto(a.photo,{_:"inputPeerUser",user_id:this.id,access_hash:this.access_hash},this.update.bind(this)):
-null,this.status=a.status);this.verified=a.pFlags?a.pFlags.verified:!1;this.raw=a},addPeer:function(a){this.peers.push(a)},forgetPeer:function(a){for(var b=0;b<this.peers.length;++b)this.peers[b].id==a.id&&(this.peers.splice(b,1),b--)},updInfo:function(a){this.update()},update:function(){for(var a=0;a<this.peers.length;++a)this.peers[a].update()}}),Chat=Class.extend({constructor:function(a,b){this.peers=b?[b]:[];this.id=a.id;this.access_hash=a.access_hash||null;this.title=title(a);this["short"]=1<
-this.title.split(" ").length?map(this.title.split(" ").slice(0,2),function(a){return a[0]}).join("").toUpperCase():this.title.slice(0,2).toUpperCase();this.creator=a.pFlags?a.pFlags.creator:!1;this.isChat="chat"==a._;this.isChannel="channel"==a._;var c;"chat"==a._?c={_:"inputPeerChat",chat_id:a.id,access_hash:this.access_hash}:"channel"==a._&&(c={_:"inputPeerChannel",channel_id:a.id,access_hash:this.access_hash});this.photo=a.photo&&c?new ProfilePhoto(a.photo,c,this.update.bind(this)):null;this.raw=
-a;this.members=null;this.membersCount=a.participants_count||null;this.status=null;this.verified=a.pFlags?a.pFlags.verified:!1;this.infoLoaded=!1;this.info=null},addPeer:function(a){this.peers.push(a)},forgetPeer:function(a){for(var b=0;b<this.peers.length;++b)this.peers[b].id==a.id&&(this.peers.splice(b,1),b--)},update:function(){for(var a=0;a<this.peers.length;++a)this.peers[a].update()},updInfo:function(a){},loadInfo:function(){if(!this.infoLoaded){console.log("loading info");var a=this;call(this.isChat?
-"messages.getFullChat":"channels.getFullChannel",{chat_id:this.id,channel:{_:"inputChannel",channel_id:this.id,access_hash:this.access_hash}},function(b,c){b?(console.log("info loaded: ",c),a.infoLoaded=!0,c.users&&pushUsers(c.users),c.chats&&pushChats(c.chats),a.info=c.full_chat,a.membersCount=a.info.participants_count?a.info.participants_count:a.info.participants.length,a.update()):console.warn("failed to load chat/channel info")})}}}),Peer=Class.extend({constructor:function(a,b){this.onDialogUpdate=
-{};this.onMessagesUpdate={};this.type=peerType[a._];this.id=peerID(a);"undefined"===typeof peers[this.id]&&(peers[this.id]=this);this.access_hash=null;this.messages={};this.messagesCount=-1;this.holes=[];b&&this.obtainInfo(b);this.inputPeer=this._inputPeer();b.channel&&b.channel.raw.pFlags.megagroup&&(this.type="c")},load:function(){this.loadHole()},loadHole:function(a){if("undefined"===typeof a)var b={offset_id:0,offset_date:0,add_offset:0,max_id:0,min_id:0,hash:0,limit:20};else b=this.holes[a],
-b={offset_id:b.id,offset_date:0,add_offset:b.dir?0:-20,limit:20,max_id:0,min_id:0,hash:0};var c=this;c.loadingHole=!0;call("messages.getHistory",assign({peer:this.inputPeer},b),function(b,e){if(b)c.loadingHole=!1,c.receiveHistory(a,e);else if("FLOOD_WAIT_"==e.error_message.slice(0,11)){var d=parseInt(e.error_message.slice(11));console.warn("getHistory: FLOOD (waiting "+d+" seconds)");$t(1E3*d,c.loadHole.bind(c,a))}else c.loadingHole=!1})},receiveHistory:function(a,b){b.users&&pushUsers(b.users);if(b.messages){b.count&&
-(this.messagesCount=b.count);this.putMessages(b.messages);"undefined"===typeof a&&(this.holes.push({id:b.messages[b.messages.length-1].id,dir:!0}),a=this.holes.length-1);for(var c=this.holes[a],d=0;d<this.holes.length;++d)if(d!=a)for(var e=0;e<b.messages.length;++e)b.messages[e].id==this.holes[d].id&&(this.holes[d].dir?e!=b.messages.length-1:0!=e)&&(this.holes.splice(d,1),d--);c&&c.dir&&0<b.messages.length?0!=b.messages[b.messages.length-1].id&&Object.keys(this.messages).length!=this.messagesCount&&
-this.holes.push({id:b.messages[b.messages.length-1].id,dir:!0}):c&&!c.dir&&0<b.messages.length&&b.messages[0].id!=this.top_message&&Object.keys(this.messages).length!=this.messagesCount&&this.holes.push({id:b.messages[0].id,dir:!1});if(c)for(d=0;d<this.holes.length;++d)this.holes[d].id==c.id&&this.holes[d].dir==c.dir&&this.holes.splice(d,1);this.update()}},processMessage:function(a){a.media&&(a.mediaRaw=a.media,a.media=new Media(a.media,a,this));return a},putMessages:function(a,b,c,d){for(var e=0;e<
-a.length;++e){var g=this.processMessage(a[e]);this.messages[a[e].id]=g;g.id>this.top_message&&(this.top_message=g.id)}c&&this.holes.push({dir:!0,id:a[0].id});d&&this.holes.push({dir:!1,id:a[a.length-1].id});b&&this.update()},deleteMessages:function(a){for(var b=0;b<a.length;++b)delete this.messages[a[b]];for(b=0;b<a.length;++b)for(var c=0;c<this.holes.length;++c){var d=this.holes[c];if(d.id==a[b])for(var e=d.id;d.dir?0<=e:e<=this.top_message;d.dir?e--:e++)if(this.messages[e]){this.holes[c].id=e;break}}this.update(a)},
-update:function(a){for(var b in this.onDialogUpdate)this.onDialogUpdate[b](this,a);for(b in this.onMessagesUpdate)this.onMessagesUpdate[b](this,a)},_inputPeer:function(){var a={_:inputPeerName[this.type]},b=this.id.slice(1);a[ids[this.type]]=parseInt(b);null!=this.access_hash&&(a.access_hash=this.access_hash);return a},updateAsDialog:function(a){this.obtainInfo(a)},obtainInfo:function(a){this.unread=a.unread_count;this.unread_mentions=a.unread_mentions_count;this.top_message=a.top_message||-1;a.user&&
-(this.user&&this.user.id!=a.user.id&&this.user.forgetPeer(this),this.user&&this.user.id==a.user.id||(this.user=a.user,this.user.addPeer(this)),this.access_hash=a.user.access_hash);if(a.channel||a.chat){var b=a.channel||a.chat;this.chat&&this.chat.id!=b.id&&this.chat.forgetPeer(this);this.chat&&this.chat.id==b.id||(this.chat=b,this.chat.addPeer(this));this.access_hash=(a.channel||a.chat).access_hash}a.message&&(this.messages[this.top_message]=this.processMessage(a.message),this.holes.push({dir:!0,
-id:a.message.id}));this.pinned=a.pFlags?a.pFlags.pinned||!1:!1;this.notify=a.notify_settings?{show_priviews:a.notify_settings.show_priviews||!1,silent:a.notify_settings.silent||!1,mute_until:a.notify_settings.mute_until||-1,sound:a.notify_settings.sound||"def"}:null;"dialog"==a._&&(this.existInDialogs=!0);this.update()},listenDialog:function(a){var b=~~(99999*Math.random())+"";this.onDialogUpdate[b]=a;return b},forgetDialog:function(a){this.onDialogUpdate[a]&&delete this.onDialogUpdate[a]},listenMessages:function(a){var b=
-~~(99999*Math.random())+"";this.onMessagesUpdate[b]=a;return b},forgetMessages:function(a){this.onMessagesUpdate[a]&&delete this.onMessagesUpdate[a]}}),dialogsCount=0,dialogs=[],peers={};function call(a,b,c){proto.sendAPIMethod(a,b,function(a,b){a||"AUTH_KEY_UNREGISTERED"!=b.error_message?c.apply(this,arr(arguments)):(Storage.remove("auth"),closeApp(),startIntro())})}proto.listenUpdates(receiveUpdates);
-function receiveUpdates(a){pushUsers(a.users);pushChats(a.chats);if("updates"==a._){for(var b={},c={},d=0;d<a.updates.length;++d){var e=a.updates[d],g=e._.slice(6);if("NewMessage"==g){var f=peerID(e.message.to_id);b[f]||(b[f]=[]);b[f].push(e.message)}else if("DeleteMessages"==g)for(d=0;d<e.messages.length;++d)for(f in peers)peers[f].messages[e.messages[d]]&&(c[f]||(c[f]=[]),c[f].push(e.messages[d]));else processUpdate(e)}for(f in b)console.log(f),console.log(peers),peers[f].putMessages(b[f]);for(f in c)peers[f].deleteMessages(c[f])}else"updateShortChatMessage"==
-a._?newmessage("c"+a.chat_id,a):"updateShortMessage"==a._?newmessage("u"+a.user_id,a):"updateShort"==a._&&processUpdate(a.update)}function processUpdate(a){"UserStatus"==a._.slice(6)&&users[a.user_id]&&(users[a.user_id].status=a.status,"function"!==typeof users[a.user_id].update?(console.error("WTF????????"),console.log(users[a.user_id],a)):users[a.user_id].update())}
-function newmessage(a,b){peers[a]&&(0>["message","messageService","messageEmpty"].indexOf(b._)&&(b._="message"),peers[a].putMessages([b],!0))}function pushUsers(a){if(Array.isArray(a))for(var b=0;b<a.length;++b)users[a[b].id]||(users[a[b].id]=new User(a[b]))}function pushChats(a){if(Array.isArray(a))for(var b=0;b<a.length;++b)chats[a[b].id]||(chats[a[b].id]=new Chat(a[b]))}
-function receiveDialogs(a,b,c){if(b){dialogsCount="messages.dialogsSlice"==c._?c.count:c.dialogs.length;pushUsers(c.users);pushChats(c.chats);for(var d=b=0;b<c.dialogs.length;++b){var e=c.dialogs[b],g=peerID(e.peer),f=g[0];parseInt(g.slice(1));if("u"==f)e.user=users[e.peer.user_id];else if("C"==f||"c"==f)f="c"==f?"chat":"channel",e[f]=chats[e.peer[f+"_id"]];e.message=find(c.messages,function(a){return a.id==e.top_message});peers[g]?(peer=peers[g],peer.updateAsDialog(e)):(peer=new Peer(e.peer,e),dialogs[d+
-a]=peer.id,d++)}0==a&&clearDialogs();appendNewDialogs()}}function updateStatus(a){call("account.updateStatus",{offline:a?{_:"boolFalse"}:{_:"boolTrue"}},function(a,c){a?users[auth.user.id]&&(users[auth.user.id].status={_:"userStatusOnline"},users[auth.user.id].update()):console.warn("failed to update status")})};
+var ids = {u:'user_id',C:'channel_id',c:'chat_id'};
+var peerType = {peerUser: 'u', peerChannel: 'C', peerChat: 'c'};
+var peerName = {u:'peerUser',C:'peerChannel',c:'peerChat'};
+var inputPeerName = {u:'inputPeerUser',C:'inputPeerChannel',c:'inputPeerChat'};
+function peerID(peer) {
+	return peerType[peer._]+peer[ids[peerType[peer._]]];
+}
+
+var ext = {};
+var ExternalMTProto = MTProto.extend({
+	constructor: function (options) {
+		var self = this;
+		this.id = S(options.photo_id);
+		this._super(options);
+		this.before = function (callback) {
+			function importAuth(data) {
+				self.sendAPIMethod('auth.importAuthorization', {
+					id: data.id,
+					bytes: data.bytes
+				}, function (status, data) {
+					if (status && data._ == "auth.authorization") {
+						callback();
+					} else {
+						self.warn('failed to import authorization', data);
+					}
+				}, true);
+			}
+			
+			proto.sendAPIMethod('auth.exportAuthorization', {
+				dc_id: self.DC
+			}, function (status, data) {
+				if (status && data._ == 'auth.exportedAuthorization') {
+					importAuth(data);
+				} else {
+					self.warn('failed to export authorization', data);
+				}
+			})
+		}
+		this.connect();
+	}
+})
+var ProfilePhoto = Class.extend({
+	constructor: function (data, inputPeer, onUpdate) {
+		this.conn = proto;
+
+		this.dc_id = data.dc_id || 2;
+
+		this.filename = null;
+		this.size = null;
+		this.isSticker = false;
+		this.isAnimatedSticker = false;
+
+		this.onUpdate = onUpdate;
+		this.inputPeer = inputPeer;
+		this.blob = null;
+		this.src = null;
+
+		if (data._.toLowerCase().indexOf('empty') >= 0)
+			return;
+		this.volume_id = data.photo_small.volume_id;
+		this.local_id = data.photo_small.local_id;
+		this.load();
+	},
+	load: function () {
+		var self = this;
+		loadDeprecatedLocation(this.dc_id, {
+			_: "inputPeerPhotoFileLocation",
+			peer: this.inputPeer,
+			local_id: this.local_id,
+			volume_id: this.volume_id
+		}, (blob, src) => {
+			self.blob = blob;
+			self.src = src;
+			if (typeof self.onUpdate === 'function') {
+				self.onUpdate();
+			}
+		});
+	}
+});
+function title(data) {
+	if (data && data._ == 'user')
+		return data.first_name + (data.last_name ? ' ' + data.last_name : '');
+	return data ? data.title : ''
+}
+
+var Media = Class.extend({
+	constructor: function (data, message, peer) {
+		this.onUpdate = null;
+		this.type = data._.slice(12).toLowerCase();
+		this.raw = data;
+		this.message = message;
+		this.peer = peer;
+
+		this.ready = true;
+		if (this.type == 'empty') {
+			// ok...
+		} else if (this.type == 'photo') {
+			this.photoRaw = data.photo;
+			if (this.photoRaw._ == 'photoEmpty') {
+				// ehm, ok...
+				return;
+			}
+
+			this.photo = this.photoRaw;
+			this.photo.src = null;
+			this.photo.previewSrc = null;
+			this.ready = false;
+			this.loadPreviewPhoto();
+		} else {
+			// TODO
+		}
+	},
+	loadPreviewPhoto: function () {
+		var sizes = this.photo.sizes;
+		var preferableSizes = "xmyswabcd";
+		var types = map(sizes, function (size) {return size.type});
+		var size = null;
+		for (var p = 0; p < preferableSizes.length; ++p) {
+			if (types.indexOf(preferableSizes[p]) >= 0) {
+				size = sizes[types.indexOf(preferableSizes[p])];
+				break;
+			}
+		}
+		if (size == null) {
+			console.warn("size for preview not found");
+			return;
+		}
+		this.previewSize = size;
+		if (!size.location) {
+			console.warn("location in size object is missing");
+			return;
+		}
+
+		var self = this;
+		loadDeprecatedLocation(this.photo.dc_id, {
+			_: "inputPhotoFileLocation",
+			access_hash: this.photo.access_hash,
+			file_reference: this.photo.file_reference,
+			thumb_size: size.type,
+			id: this.photo.id
+		}, (blob, src) => {
+			self.previewSrc = src;
+			self.previewBlob = blob;
+			if (typeof self.onUpdate === 'function')
+				self.onUpdate();
+		});
+	},
+	loadPhoto: function () {
+
+	}
+});
+
+function loadDeprecatedLocation(dcid, location, callback) {
+	var conn;
+	if (dcid == proto.DC) {
+		conn = proto;
+	} else {
+		if (proto.DC != dcid && !ext[dcid]) {
+			ext[dcid] = new ExternalMTProto({
+				debug: true,
+				DC: dcid
+			});
+			conn = ext[dcid];
+		} else if (dcid != proto.DC && ext[dcid])
+			conn = ext[dcid];
+	}
+
+	conn.sendAPIMethod('upload.getFile', {
+		location: location,
+		offset: 0,
+		limit: 1024 * 1024
+	}, (status, data) => {
+		if (status) {
+			if (data._ == 'upload.file') {
+				var blob = new Blob([data.bytes]);
+				var src = URL.createObjectURL(blob);
+				callback(blob, src);
+			}
+		} else {
+			console.warn('upload.getFile: bad response');
+		}
+	})
+}
+
+var chats = {};
+var users = {};
+var User = Class.extend({
+	constructor: function (data, peer) {
+		this.peers = peer ? [peer] : [];
+
+		this.id = data.id;
+		this.access_hash = data.access_hash;
+		if (data.pFlags.deleted) {
+			this.title = 'Deleted Account';
+			this.short = ':(';
+			this.photo = null;
+		} else {
+			this.title = title(data);
+			this.short = data.last_name ? (data.first_name[0]+data.last_name[0]).toUpperCase() :
+										   data.first_name[0].toUpperCase();
+			this.phone = data.phone || false;
+			this.photo = data.photo && data.photo._ != 'chatPhotoEmpty' ? new ProfilePhoto(data.photo, {
+				_: "inputPeerUser",
+				user_id: this.id,
+				access_hash: this.access_hash
+			}, this.update.bind(this)) : null;
+
+			this.status = data.status;
+		}
+		this.verified = data.pFlags ? data.pFlags.verified : false;	
+
+		this.raw = data;
+	},
+	addPeer: function (peer) {
+		this.peers.push(peer);
+	},
+	forgetPeer: function (peer) {
+		for (var i = 0; i < this.peers.length; ++i) {
+			if (this.peers[i].id == peer.id) {
+				this.peers.splice(i, 1);
+				i--;
+			}
+		}
+	},
+	updInfo: function (new_data) {
+		this.update();
+	},
+	update: function () {
+		for (var i = 0; i < this.peers.length; ++i)
+			this.peers[i].update();
+	}
+});
+var Chat = Class.extend({
+	constructor: function (data, peer) {
+		this.peers = peer ? [peer] : [];
+
+		this.id = data.id;
+		this.access_hash = data.access_hash || null;
+		this.title = title(data);
+
+		this.short = this.title.split(' ').length > 1 ? map(this.title.split(' ').slice(0,2),function(s){return s[0]}).join('').toUpperCase() :
+														this.title.slice(0, 2).toUpperCase();
+
+		this.creator = data.pFlags ? data.pFlags.creator : false;
+		this.isChat = data._ == 'chat';
+		this.isChannel = data._ == 'channel';
+
+		var inputPeer;
+		if (data._ == 'chat') {
+			inputPeer = {
+				_: "inputPeerChat",
+				chat_id: data.id,
+				access_hash: this.access_hash
+			}
+		} else if (data._ == 'channel') {
+			inputPeer = {
+				_: "inputPeerChannel",
+				channel_id: data.id,
+				access_hash: this.access_hash
+			};
+		}
+		this.photo = data.photo && inputPeer ? new ProfilePhoto(data.photo, inputPeer, this.update.bind(this)) : null;
+
+		this.raw = data;
+
+		this.members = null;
+		this.membersCount = data.participants_count || null;
+		this.status = null;
+
+		this.verified = data.pFlags ? data.pFlags.verified : false;
+
+		this.infoLoaded = false;
+		this.info = null;
+	},
+	addPeer: function (peer) {
+		this.peers.push(peer);
+	},
+	forgetPeer: function (peer) {
+		for (var i = 0; i < this.peers.length; ++i) {
+			if (this.peers[i].id == peer.id) {
+				this.peers.splice(i, 1);
+				i--;
+			}
+		}
+	},
+	update: function () {
+		for (var i = 0; i < this.peers.length; ++i)
+			this.peers[i].update();
+	},
+	updInfo: function (new_data) {
+
+	},
+	loadInfo: function () {
+		if (this.infoLoaded)
+			return;
+
+		console.log('loading info')
+
+		var self = this;
+		call(this.isChat ? 'messages.getFullChat' : 'channels.getFullChannel', {
+			chat_id: this.id,
+			channel: {
+				_: 'inputChannel',
+				channel_id: this.id,
+				access_hash: this.access_hash
+			}
+		}, function (status, data) {
+			if (!status) {
+				console.warn('failed to load chat/channel info');
+				return;
+			}
+
+			console.log('info loaded: ', data);
+
+			self.infoLoaded = true;
+			if (data.users)
+				pushUsers(data.users);
+			if (data.chats)
+				pushChats(data.chats);
+
+			self.info = data.full_chat;
+			if (self.info.participants_count)
+				self.membersCount = self.info.participants_count;
+			else {
+				self.membersCount = self.info.participants.length;
+			}
+
+			self.update();
+		})
+	}
+})
+var Peer = Class.extend({
+	constructor: function (peer, dialog) {
+		this.onDialogUpdate = {};
+		this.onMessagesUpdate = {};
+
+		this.type = peerType[peer._];
+		this.id = peerID(peer);
+		if (typeof peers[this.id] === 'undefined')
+			peers[this.id] = this;
+
+		this.access_hash = null;
+		this.messages = {};
+		this.messagesCount = -1;
+		this.holes = [];
+
+		if (dialog)
+			this.obtainInfo(dialog);
+		this.inputPeer = this._inputPeer();
+		if (dialog.channel && dialog.channel.raw.pFlags.megagroup)
+			this.type = 'c';
+	},
+	load: function () {
+		this.loadHole();
+	},
+	loadHole: function (hole_id) {
+		var offset;
+		if (typeof hole_id === 'undefined') {
+			offset = {
+				offset_id: 0,
+				offset_date: 0,
+				add_offset: 0,
+				max_id: 0,
+				min_id: 0,
+				hash: 0,
+				limit: 20
+			};
+		} else {
+			var hole = this.holes[hole_id];
+			var msg = this.messages[hole.id];
+			offset = {
+				offset_id: hole.id,
+				offset_date: 0,//hole.dir ? 0 : msg.date,
+				add_offset: hole.dir ? 0 : -20,
+				limit: 20,
+				max_id: 0,//hole.dir ? hole.id : 0,
+				min_id: 0,//hole.dir ? 0 : hole.id,
+				hash: 0
+			};
+		}
+
+		var self = this;
+		self.loadingHole = true;
+		call('messages.getHistory', assign({
+			peer: this.inputPeer
+		}, offset), function (status, data) {
+			if (status) {
+				self.loadingHole = false;
+				self.receiveHistory(hole_id, data);
+			} else {
+				if (data.error_message.slice(0, 11) == 'FLOOD_WAIT_') {
+					var s = parseInt(data.error_message.slice(11));
+					console.warn('getHistory: FLOOD (waiting ' + s + " seconds)");
+					$t(s * 1000, self.loadHole.bind(self, hole_id));
+				} else 
+					self.loadingHole = false;
+			}
+		});
+	},
+	receiveHistory: function (hole_id, data) {
+		if (data.users) {
+			pushUsers(data.users);
+		}
+
+		if (!data.messages)
+			return;
+		if (data.count)
+			this.messagesCount = data.count;
+		this.putMessages(data.messages);
+
+		if (typeof hole_id === 'undefined') {
+			this.holes.push({
+				id: data.messages[data.messages.length-1].id,
+				dir: true
+			});
+			hole_id = this.holes.length-1;
+		}
+
+		var hole = this.holes[hole_id];
+		for (var i = 0; i < this.holes.length; ++i) {
+			if (i == hole_id) continue;
+			for (var j = 0; j < data.messages.length; ++j) {
+				if (data.messages[j].id == this.holes[i].id &&
+					(this.holes[i].dir ? j != data.messages.length-1 : j != 0)) {
+					this.holes.splice(i, 1);
+					i--;
+					continue;
+				}
+			}
+		}
+		if (hole && hole.dir && data.messages.length > 0) {
+			if (data.messages[data.messages.length-1].id != 0 &&
+				Object.keys(this.messages).length != this.messagesCount)
+				this.holes.push({
+					id: data.messages[data.messages.length-1].id,
+					dir: true
+				})	
+		} else if (hole && !hole.dir && data.messages.length > 0) {
+			if (data.messages[0].id != this.top_message &&
+				Object.keys(this.messages).length != this.messagesCount)
+				this.holes.push({
+					id: data.messages[0].id,
+					dir: false
+				})
+		}
+
+		if (hole) {
+			for (var i = 0; i < this.holes.length; ++i) {
+				if (this.holes[i].id == hole.id && 
+					this.holes[i].dir == hole.dir) {
+					this.holes.splice(i, 1);
+				}
+			}
+		}
+
+		this.update();
+	},
+	processMessage: function (msg) {
+		if (msg.media) {
+			msg.mediaRaw = msg.media;
+			msg.media = new Media(msg.media, msg, this);
+		}
+		return msg;
+	},
+	putMessages: function (messages, update, holeBefore, holeAfter) {
+		for (var i = 0; i < messages.length; ++i) {
+			var message = this.processMessage(messages[i]);
+			this.messages[messages[i].id] = message;
+			if (message.id > this.top_message)
+				this.top_message = message.id;
+		}
+		if (holeBefore) {
+			this.holes.push({
+				dir: true,
+				id: messages[0].id
+			})
+		}
+		if (holeAfter) {
+			this.holes.push({
+				dir: false,
+				id: messages[messages.length-1].id
+			})
+		}
+		if (update)
+			this.update();
+	},
+	deleteMessages: function (ids) {
+		for (var i = 0; i < ids.length; ++i) {
+			delete this.messages[ids[i]];
+		}
+
+		for (var i = 0; i < ids.length; ++i) {
+			for (var j = 0; j < this.holes.length; ++j) {
+				var hole = this.holes[j];
+				if (hole.id == ids[i]) {
+					for (var u = hole.id; hole.dir ? u >= 0 : u <= this.top_message; hole.dir ? u-- : u++) {
+						if (this.messages[u]) {
+							this.holes[j].id = u;
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		this.update(ids);
+	},
+	update: function(todelete) {
+		for (var k in this.onDialogUpdate)
+			this.onDialogUpdate[k](this, todelete);
+		for (var k in this.onMessagesUpdate)
+			this.onMessagesUpdate[k](this, todelete);
+	},
+	_inputPeer: function () {
+		var obj = {
+			_: inputPeerName[this.type]
+		}, id = this.id.slice(1), keyid = ids[this.type];
+		obj[keyid] = parseInt(id);
+		if (this.access_hash != null)
+			obj.access_hash = this.access_hash;
+		return obj;
+	},
+	updateAsDialog: function (dialog) {
+		this.obtainInfo(dialog);
+	},
+	obtainInfo: function (dialog) {
+		this.unread = dialog.unread_count;
+		this.unread_mentions = dialog.unread_mentions_count;
+		this.top_message = dialog.top_message || -1;
+		if (dialog.user) {
+			if (this.user && this.user.id != dialog.user.id) {
+				this.user.forgetPeer(this);
+			}
+			if (!this.user || this.user.id != dialog.user.id) {
+				this.user = dialog.user;
+				this.user.addPeer(this);
+			}
+			this.access_hash = dialog.user.access_hash;
+		}
+		if (dialog.channel || dialog.chat) {
+			var chat = dialog.channel || dialog.chat;
+			if (this.chat && this.chat.id != chat.id) {
+				this.chat.forgetPeer(this);
+			}
+			if (!this.chat || this.chat.id != chat.id) {
+				this.chat = chat;
+				this.chat.addPeer(this);
+			}
+			this.access_hash = (dialog.channel || dialog.chat).access_hash;
+		}
+		if (dialog.message) {
+			this.messages[this.top_message] = this.processMessage(dialog.message);
+			this.holes.push({
+				dir: true, // before
+				id: dialog.message.id
+			});
+		}
+		this.pinned = dialog.pFlags ? dialog.pFlags.pinned || false : false;
+		this.notify = dialog.notify_settings ? {
+			show_priviews: dialog.notify_settings.show_priviews || false,
+			silent: dialog.notify_settings.silent || false,
+			mute_until: dialog.notify_settings.mute_until || -1,
+			sound: dialog.notify_settings.sound || 'def'
+		} : null;
+		if (dialog._ == 'dialog')
+			this.existInDialogs = true;
+		this.update();
+	},
+	listenDialog: function (func) {
+		var id = ~~(Math.random() * 99999) + "";
+		this.onDialogUpdate[id] = func;
+		return id;
+	},
+	forgetDialog: function (id) {
+		if (this.onDialogUpdate[id])
+			delete this.onDialogUpdate[id];
+	},
+	listenMessages: function (func) {
+		var id = ~~(Math.random() * 99999) + "";
+		this.onMessagesUpdate[id] = func;
+		return id;
+	},
+	forgetMessages: function (id) {
+		if (this.onMessagesUpdate[id])
+			delete this.onMessagesUpdate[id];
+	}
+});
+
+var dialogsCount = 0;
+var dialogs = [];
+var peers = {};
+
+function call(name, params, func) {
+	proto.sendAPIMethod(name, params, function (status, data) {
+		if (!status && data.error_message == 'AUTH_KEY_UNREGISTERED') {
+			Storage.remove('auth');
+			closeApp();
+			startIntro();
+			return;
+		}
+
+		func.apply(this, arr(arguments));
+	})
+}
+
+proto.listenUpdates(receiveUpdates);
+
+function receiveUpdates(updMsg) {
+	pushUsers(updMsg.users);
+	pushChats(updMsg.chats);
+
+	if (updMsg._ == 'updates') {
+		var toput = {}, todelete = {};
+		for (var i = 0; i < updMsg.updates.length; ++i) {
+			var upd = updMsg.updates[i], t = upd._.slice(6);
+			if (t == 'NewMessage') {
+				var pid = peerID(upd.message.to_id);
+				if (!toput[pid])
+					toput[pid] = [];
+				toput[pid].push(upd.message);
+			} else if (t == 'DeleteMessages') {
+				for (var i = 0; i < upd.messages.length; ++i) {
+					for (var pid in peers) {
+						if (peers[pid].messages[upd.messages[i]]) {
+							if (!todelete[pid])
+								todelete[pid] = [];
+							todelete[pid].push(upd.messages[i]);
+						}
+					}
+				}
+			} else
+				processUpdate(upd);
+		}
+		for (var pid in toput) {
+			console.log(pid);
+			console.log(peers)
+			peers[pid].putMessages(toput[pid])
+		}
+		for (var pid in todelete) {
+			peers[pid].deleteMessages(todelete[pid]);
+		}
+
+	} else if (updMsg._ == "updateShortChatMessage") {
+		newmessage('c'+updMsg.chat_id, updMsg);
+	} else if (updMsg._ == 'updateShortMessage') {
+		newmessage('u'+updMsg.user_id, updMsg);
+	} else if (updMsg._ == 'updateShort') {
+		processUpdate(updMsg.update);
+	}
+}
+function processUpdate(upd) {
+	var t = upd._.slice(6);
+	if (t == 'UserStatus') {
+		if (users[upd.user_id]) {
+			users[upd.user_id].status = upd.status;
+			if (typeof users[upd.user_id].update !== 'function') {
+				console.error("WTF????????");
+				console.log(users[upd.user_id], upd)
+			} else
+				users[upd.user_id].update();
+		}
+	}
+}
+function newmessage(peerid, message) {
+	if (peers[peerid]) {
+		if (['message','messageService','messageEmpty'].indexOf(message._) < 0)
+			message._ = 'message';
+		peers[peerid].putMessages([message], true);
+	}
+}
+
+// var dialogsBuffer = {};
+// function getDialogs(offset, callback) {
+// 	call('messages.getDialogs', {
+// 		offset_date: lastMessage.date,
+// 		offset_peer: peerObj,
+// 		offset_id: lastPeer.id.slice(1),
+// 		limit: 12,
+// 		hash: 0
+// 	}, function (status, result) {
+// 		if (status) {
+
+// 		} else {
+// 			console.warn('err', result);
+// 		}
+// 	});
+// }
+
+function pushUsers(uarr) {
+	if (!Array.isArray(uarr))
+		return;
+	for (var i = 0; i < uarr.length; ++i) {
+		if (!users[uarr[i].id])
+			users[uarr[i].id] = new User(uarr[i]);
+		// else users[uarr[i].id].updInfo(uarr[i]);
+	}
+}
+function pushChats(carr) {
+	if (!Array.isArray(carr))
+		return;
+	for (var i = 0; i < carr.length; ++i) {
+		if (!chats[carr[i].id])
+			chats[carr[i].id] = new Chat(carr[i]);
+		// else chats[carr[i].id].updInfo(carr[i]);
+	}
+}
+
+function receiveDialogs(offset, status, result) {
+	if (!status)
+		return;
+	if (result._ == 'messages.dialogsSlice')
+		dialogsCount = result.count;
+	else dialogsCount = result.dialogs.length;
+
+	pushUsers(result.users);
+	pushChats(result.chats);
+
+	for (var i = 0, j = 0; i < result.dialogs.length; ++i) {
+		var dialog = result.dialogs[i], peerid = peerID(dialog.peer), type = peerid[0], id = parseInt(peerid.slice(1));
+		if (type == 'u') { // user
+			dialog.user = users[dialog.peer.user_id]
+		} else if (type == 'C' || type == 'c') { // chat or channel
+			var key = type == 'c' ? 'chat' : 'channel';
+			dialog[key] = chats[dialog.peer[key+'_id']];
+		}
+		dialog.message = find(result.messages, function (m) {
+			return m.id == dialog.top_message;
+				   // m.to_id._ == peerName[type] && m.to_id[ids[type]] == id;
+		});
+
+		if (!peers[peerid]) {
+			peer = new Peer(dialog.peer, dialog);
+			dialogs[j + offset] = peer.id;
+			j++;
+		} else {
+			peer = peers[peerid];
+			peer.updateAsDialog(dialog);
+		}
+	}
+
+	if (offset == 0)
+		clearDialogs();
+	appendNewDialogs();
+}
+
+function updateStatus(isOnline) {
+	call('account.updateStatus', {
+		offline: !isOnline ? {_: 'boolTrue'} : {_: 'boolFalse'}
+	}, function (status, data) {
+		if (!status) {
+			console.warn('failed to update status');
+			return
+		}
+
+		var isOnline = data._ == 'boolFalse';
+		if (users[auth.user.id]) {
+			users[auth.user.id].status = {_: "userStatusOnline"};
+			users[auth.user.id].update();
+		}
+	})
+}
