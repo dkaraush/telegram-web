@@ -21,8 +21,8 @@ Also, I tried to support older browsers and use polyfills, but at the end just s
 with optimization of decomposizing p and q in Diffie-Hellman. 
 So, Internet Explorer freezes after trying to connect to the server.
 
-## How to leave from account?
-Minimal contest requirements were about proper login and sending/receiving text messages. In design markups there was a "Leave from account" button, but it was in settings and I wanted to make them in second stage.
+## How to leave an account?
+Minimal contest requirements were about proper login and sending/receiving text messages. In design markups there was a "Leave" button, but it was in settings and I wanted to make them in second stage.
 
 So, the only way to exit in my version of telegram is to launch `Storage.remove("auth");` in console (F12) :D
 
